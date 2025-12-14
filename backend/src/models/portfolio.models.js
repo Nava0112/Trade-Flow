@@ -4,32 +4,88 @@ export const getPortfolios = async () => {
     return await db('portfolios').select('*');
 };
 
-export const getPortfolioByUserId = async (user_id) => {
-    return await db('portfolios').where({ user_id }).first();
+export const getPortfolioByUserIdAndSymbol = async (user_id, symbol) => {
+    return await db('portfolios').where({ user_id, symbol }).first();
 }
 
-export const createPortfolio = async (portfolio) => {
-    const newPortfolio = {
-        user_id: portfolio.user_id,
-        total_value: portfolio.total_value || 0
+export const createPortfolioEntry = async (entry) => {
+    const newEntry = {
+        user_id: entry.user_id,
+        symbol: entry.symbol,
+        quantity: entry.quantity,
+        average_buy_price: entry.average_buy_price,
+        created_at: db.fn.now(),
+        updated_at: db.fn.now()
     };
-    const [createdPortfolio] = await db('portfolios').insert(newPortfolio).returning('*');
-    return createdPortfolio;
+    const [createdEntry] = await db('portfolios').insert(newEntry).returning('*');
+    return createdEntry;
 }
 
-export const updatePortfolioValue = async (user_id, total_value) => {
-    const [updatedPortfolio] = await db('portfolios').where({ user_id }).update({ total_value }).returning('*');
-    return updatedPortfolio;
-}
+export const applyBuyToPortfolio = async (user_id, symbol, buy_qty, buy_price) => {
+    const existing = await db('portfolios').where({ user_id, symbol }).first();
 
-export const deletePortfolio = async (user_id) => {
-    return await db('portfolios').where({ user_id }).del();
-}
+    if (!existing) {
+        const [created] = await db('portfolios')
+            .insert({
+                user_id,
+                symbol,
+                quantity: buy_qty,
+                average_buy_price: buy_price,
+                created_at: db.fn.now(),
+                updated_at: db.fn.now()
+            })
+            .returning('*');
 
-export const getPortfoliosWithMinValue = async (min_value) => {
-    return await db('portfolios').where('total_value', '>=', min_value);
-}
+        return created;
+    }
 
-export const getPortfoliosWithMaxValue = async (max_value) => {
-    return await db('portfolios').where('total_value', '<=', max_value);
+    const newQty = existing.quantity + buy_qty;
+    const newAvg =
+        (existing.average_buy_price * existing.quantity +
+         buy_price * buy_qty) / newQty;
+
+    const [updated] = await db('portfolios')
+        .where({ user_id, symbol })
+        .update({
+            quantity: newQty,
+            average_buy_price: newAvg,
+            updated_at: db.fn.now()
+        })
+        .returning('*');
+
+    return updated;
+};
+
+export const applySellToPortfolio = async (user_id, symbol, sell_qty) => {
+    const existing = await db('portfolios').where({ user_id, symbol }).first();
+
+    if (!existing) {
+        throw new Error('No portfolio entry to sell from');
+    }
+
+    if (sell_qty > existing.quantity) {
+        throw new Error('Insufficient quantity to sell');
+    }
+
+    const remainingQty = existing.quantity - sell_qty;
+
+    if (remainingQty === 0) {
+        await db('portfolios').where({ user_id, symbol }).del();
+        return null;
+    }
+
+    const [updated] = await db('portfolios')
+        .where({ user_id, symbol })
+        .update({
+            quantity: remainingQty,
+            updated_at: db.fn.now()
+        })
+        .returning('*');
+
+    return updated;
+};
+
+
+export const deletePortfolio = async (user_id, symbol) => {
+    return await db('portfolios').where({ user_id, symbol }).del();
 }

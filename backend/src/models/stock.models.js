@@ -9,23 +9,46 @@ export const getStockBySymbol = async (symbol) => {
 }
 
 export const addStock = async (stock) => {
+    const existingStock = await getStockBySymbol(stock.symbol);
+    if (existingStock) {
+        throw new Error('Stock with this symbol already exists');
+    }
     const [newStock] = await db('stocks').insert(stock).returning('*');
     return newStock;
 }
 
 export const deleteStockBySymbol = async (symbol) => {
-    return await db('stocks').where({ symbol }).del();
-}
+    const deletedCount = await db('stocks')
+        .where({ symbol })
+        .del();
+
+    if (deletedCount === 0) {
+        throw new Error('Stock not found');
+    }
+
+    return deletedCount;
+};
+
 
 export const updateStockPrice = async (symbol, price) => {
-    const [updatedStock] = await db('stocks').where({ symbol }).update({ price }).returning('*');
-    return updatedStock;
-}
+    const updateData = {
+        price,
+        updated_at: db.fn.now()
+    };
+
+    const [stock] = await db('stocks')
+        .where({ symbol })
+        .update(updateData)
+        .returning('*');
+
+    if (!stock) {
+        throw new Error('Stock not found');
+    }
+
+    return stock;
+};
 
 export const getStocksByPriceRange = async (minPrice, maxPrice) => {
     return await db('stocks').whereBetween('price', [minPrice, maxPrice]);
 }
 
-export const getPendingStocks = async () => {
-    return await db('stocks').where({ symbol: null });
-}
