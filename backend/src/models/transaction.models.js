@@ -8,18 +8,20 @@ export const getTransactionById = async (id) => {
     return await db('transactions').where({ id }).first();
 }
 
-export const createTransaction = async (transaction) => {
-    const newTransaction = {
-        user_id: transaction.user_id,
-        symbol: transaction.symbol,
-        quantity: transaction.quantity,
-        price: transaction.price,
-        transaction_type: transaction.transaction_type,
-        date: transaction.date || new Date()
-    };
-    const [createdTransaction] = await db('transactions').insert(newTransaction).returning('*');
-    return createdTransaction;
-}
+export const createTransactionRecord = async (user_id, type, amount, status, order_id = null, symbol = null, price = null) => {
+    const [newTransaction] = await db('transactions')
+        .insert({
+            user_id,
+            type,
+            amount,
+            status,
+            order_id,
+            symbol,
+            price
+        })
+        .returning('*');
+    return newTransaction;
+};
 
 export const getTransactionsByUserId = async (user_id) => {
     return await db('transactions').where({ user_id });

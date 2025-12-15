@@ -26,7 +26,7 @@ export const isSelfRoute = (req, res, next) => {
         if (err) {
             return res.status(401).json({ error: "Unauthorized" });
         }
-        if (decoded.id !== req.params.id) {
+        if (decoded.id !== req.params.id && decoded.role !== "admin") {
             return res.status(403).json({ error: "Forbidden" });    
         }
         next();
