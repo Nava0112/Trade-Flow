@@ -8,6 +8,7 @@ import { router as userRoutes } from "./routes/user.routes.js";
 import { router as transactionRoutes } from "./routes/transaction.route.js";
 import { router as orderRoutes } from "./routes/order.routes.js";
 import { router as authRoutes } from "./routes/auth.routes.js";
+import {router as walletRoutes} from "./routes/wallet.routes.js";
 dotenv.config();
 
 const app = express();
@@ -33,6 +34,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/auth", authRoutes); 
+app.use("/api/wallet", walletRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
