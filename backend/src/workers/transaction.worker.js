@@ -1,4 +1,5 @@
 import db from '../db/knex.js';
+import { updatePortfolioForBuyService, updatePortfolioForSellService } from '../services/portfolio.services.js';
 import { confirmDeposit } from '../services/wallet.services.js';
 
 const INTERVAL_MS = 10_000;
@@ -17,7 +18,22 @@ export function startDepositWorker() {
 
       for (const tx of pendingDeposits) {
         try {
-          await confirmDeposit(tx.id);
+          const confirmedTx = await confirmDeposit(tx.id);
+          const transactionType = confirmedTx.type;
+          if (transactionType !== 'BUY') {
+            try {
+                  await updatePortfolioForBuyService(confirmedTx.user_id, confirmedTx.symbol, confirmedTx.quantity, confirmedTx.price);
+            } catch (err) {
+              console.error(`❌ Logging error for transaction ${tx.id}:`, err.message);
+            }
+          }
+          else if( transactionType === 'SELL' ) {
+            try {
+              await updatePortfolioForSellService(confirmedTx.user_id, confirmedTx.symbol, -confirmedTx.quantity, confirmedTx.price);
+            } catch (err) {
+              console.error(`❌ Logging error for transaction ${tx.id}:`, err.message);
+            }
+          }
           console.log(`✅ Deposit confirmed: ${tx.id}`);
         } catch (err) {
           console.error(`❌ Failed to confirm deposit ${tx.id}:`, err.message);
