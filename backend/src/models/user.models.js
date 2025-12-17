@@ -48,8 +48,11 @@ export const hashPassword = async (password) => {
     return hashedPassword;
 }
 
-export const getuserByTransactionId = async (transactionId) => {
+export const getUserByTransactionId = async (transactionId) => {
     const transaction = await db('transactions').where({ id: transactionId }).first();
+    if (!transaction) {
+        return null;
+    }
     const user = await db('users').where({ id: transaction.user_id }).first();
     return user;
 }

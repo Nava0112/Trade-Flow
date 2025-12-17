@@ -26,7 +26,9 @@ export const isSelfRoute = (req, res, next) => {
         if (err) {
             return res.status(401).json({ error: "Unauthorized" });
         }
-        if (decoded.id !== req.params.id && decoded.role !== "admin") {
+        const normalizedDecodedId = String(decoded?.id);
+        const normalizedParamId = String(req.params.userId || req.params.id);
+        if (normalizedDecodedId !== normalizedParamId && decoded.role !== "admin") {
             return res.status(403).json({ error: "Forbidden" });    
         }
         next();
@@ -43,12 +45,21 @@ export const isTransactionOwner = async (req, res, next) => {
         if (err) {
             return res.status(401).json({ error: "Unauthorized" });
         }
-        const user = await getuserByTransactionId(req.params.id);
-        if(!user) {
+        let user;
+        try {
+            user = await getuserByTransactionId(req.params.id);
+        } catch (err) {
             return res.status(404).json({ error: "Transaction not found" });
         }
-        if (decoded.id !== user.id && decoded.role !== "admin") {
-            return res.status(403).json({ error: "Forbidden" });    
+        if (!user) {
+            return res.status(404).json({ error: "Transaction not found" });
+        }
+        
+        const normalizedDecodedId = String(decoded?.id);
+        const normalizedUserId = String(user?.id);
+        
+        if (normalizedDecodedId !== normalizedUserId && decoded.role !== "admin") {
+            return res.status(403).json({ error: "Forbidden" });
         }
         next();
     });

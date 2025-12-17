@@ -108,4 +108,6 @@ export const validateOrderData = (orderData) => {
     if (quantity <= 0 || price <= 0) {
         throw new Error("Quantity and price must be positive");
     }
-}
+
+    return { user_id, symbol, quantity, price };
+};

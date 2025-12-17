@@ -8,6 +8,6 @@ import { isSelfRoute, isTransactionOwner } from '../middleware/auth.middleware.j
 
 export const router = express.Router();
 
-router.post('/deposit/:userId', isSelfRoute, depositToWalletController);
-router.get('/balance/:userId', isSelfRoute, getUserWalletBalanceController);
-router.post('/deposit/:transactionId/confirm', isTransactionOwner, confirmDepositController);
+router.post('/deposit/:id', isSelfRoute, depositToWalletController);
+router.get('/balance/:id', isSelfRoute, getUserWalletBalanceController);
+router.post('/deposit/:id/confirm', isTransactionOwner, confirmDepositController);

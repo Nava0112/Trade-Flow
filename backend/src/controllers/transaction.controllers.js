@@ -1,6 +1,6 @@
 import {
   getAllTransactions,
-  getTransactionById,
+  getTransactionsByUserId,
   deleteTransaction
 } from '../models/transaction.models.js';
 
@@ -41,7 +41,7 @@ export const deleteTransactionController = async (req, res) => {
 export const getUserTransactionsController = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const transactions = await getTransactionById(userId);
+    const transactions = await getTransactionsByUserId(userId);
     res.status(200).json(transactions);
   } catch (error) {
     res.status(500).json({ error: error.message });

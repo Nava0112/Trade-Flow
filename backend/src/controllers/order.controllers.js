@@ -6,6 +6,7 @@ import {
     updateOrderStatus 
 } from "../models/order.models.js";
 import { createTransaction } from "../models/transaction.models.js";
+import { createBuyOrderService, createSellOrderService } from "../services/order.services.js";
 
 export const createOrderController = async (req, res) => {
     const orderData = req.body;
@@ -25,7 +26,11 @@ export const createOrderController = async (req, res) => {
                 status: 'PENDING',
                 order_id: newOrder.id
             });
-            
+            try {
+                await createBuyOrderService(newOrder);
+            } catch (err) {
+                console.error(`❌ Logging error for order ${newOrder.id}:`, err.message);
+            }
         } else {
             await createTransaction({
                 user_id: orderData.user_id,
@@ -34,7 +39,12 @@ export const createOrderController = async (req, res) => {
                 status: 'PENDING',
                 order_id: newOrder.id
             });
+            try {
+                await createSellOrderService(newOrder);
+            } catch (err) {
+                console.error(`❌ Logging error for order ${newOrder.id}:`, err.message);
             }
+        }
         res.status(201).json(newOrder);
     } catch (error) {
         res.status(500).json({ error: error.message });
