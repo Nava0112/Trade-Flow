@@ -7,11 +7,12 @@ import {
 } from "../controllers/order.controllers.js";
 
 import express from "express";
+import { onlyVerifyToken, isAdminRoute } from "../middleware/auth.middleware.js";
 
 export const router = express.Router();
 
-router.get("/", getAllOrdersController);
-router.get("/:id", getOrderByIdController);
-router.post("/", createOrderController);
-router.put("/:id/status", updateOrderStatusController);
-router.get("/symbol/:symbol", getOrdersBySymbolController);
+router.get("/", onlyVerifyToken, getAllOrdersController);
+router.get("/:id", onlyVerifyToken, getOrderByIdController);
+router.post("/", isAdminRoute, createOrderController);
+router.put("/:id/status", isAdminRoute, updateOrderStatusController);
+router.get("/symbol/:symbol", onlyVerifyToken, getOrdersBySymbolController);

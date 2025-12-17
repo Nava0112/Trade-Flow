@@ -47,3 +47,9 @@ export const hashPassword = async (password) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     return hashedPassword;
 }
+
+export const getuserByTransactionId = async (transactionId) => {
+    const transaction = await db('transactions').where({ id: transactionId }).first();
+    const user = await db('users').where({ id: transaction.user_id }).first();
+    return user;
+}

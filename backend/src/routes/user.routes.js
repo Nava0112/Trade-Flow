@@ -14,7 +14,4 @@ router.get('/', isAdminRoute, getAllUsersController);
 router.get('/email/:email', getUserByEmailController);
 router.delete('/:id', isSelfRoute, deleteUserController);
 router.put('/:id/password', isSelfRoute, updateUserPasswordController);
-router.post('/wallet/deposit', (req, res) => {
-    res.status(501).json({ error: "Not Implemented" });
-});
     

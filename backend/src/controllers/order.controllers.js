@@ -5,6 +5,7 @@ import {
     createOrder, 
     updateOrderStatus 
 } from "../models/order.models.js";
+import { createTransaction } from "../models/transaction.models.js";
 
 export const createOrderController = async (req, res) => {
     const orderData = req.body;
@@ -15,6 +16,25 @@ export const createOrderController = async (req, res) => {
             });
         }
         const newOrder = await createOrder(orderData);
+        const transactionType = orderData.order_type === 'BUY' ? 'BUY' : 'SELL';
+        if (transactionType === 'BUY') {
+            await createTransaction({
+                user_id: orderData.user_id,
+                type: transactionType,
+                amount: orderData.quantity * orderData.price,
+                status: 'PENDING',
+                order_id: newOrder.id
+            });
+            
+        } else {
+            await createTransaction({
+                user_id: orderData.user_id,
+                type: transactionType,
+                amount: orderData.quantity * orderData.price,
+                status: 'PENDING',
+                order_id: newOrder.id
+            });
+            }
         res.status(201).json(newOrder);
     } catch (error) {
         res.status(500).json({ error: error.message });

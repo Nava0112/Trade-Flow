@@ -28,8 +28,20 @@ export const confirmDeposit = async (transactionId) => {
 
         if (!user) throw new Error('User not found');
 
-        const currentBalance = parseFloat(user.balance) || 0;
-        const depositAmount = parseFloat(transaction.amount) || 0;
+        const currentBalance = parseFloat(user.balance);
+        if (!Number.isFinite(currentBalance)) {
+            throw new Error('Invalid user.balance: must be a finite number');
+        }
+
+        const depositAmount = parseFloat(transaction.amount);
+        if (!Number.isFinite(depositAmount)) {
+            throw new Error('Invalid transaction.amount: must be a finite number');
+        }
+
+        if (depositAmount <= 0) {
+            throw new Error('Deposit amount must be positive');
+        }
+
         const newBalance = currentBalance + depositAmount;
 
         await trx('users')
