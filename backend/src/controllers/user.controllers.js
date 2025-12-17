@@ -1,7 +1,14 @@
-import { getUsers, createUser, getUserByEmail, deleteUser, updateUserPassword } from '../models/user.models.js';
+import { 
+    getUsers, 
+    createUser, 
+    getUserByEmail, 
+    deleteUser, 
+    updateUserPassword 
+} from '../models/user.models.js';
 
 export const createUserController = async (req, res) => {
-    const newUser = req.body;
+    const { name, email, password, balance } = req.body;
+    const newUser = { name, email, password, balance };
     try {
         const findUser = await getUserByEmail(newUser.email);
         if (findUser) {

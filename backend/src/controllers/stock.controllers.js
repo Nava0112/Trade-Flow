@@ -1,4 +1,11 @@
-import { getStocks, getStockBySymbol, addStock, deleteStockBySymbol, updateStockPrice, getStocksByPriceRange, getPendingStocks } from '../models/stock.models.js';
+import {
+  getStocks,
+  getStockBySymbol,
+  addStock,
+  deleteStockBySymbol,
+  updateStockPrice,
+  getStocksByPriceRange,
+} from '../models/stock.models.js';
 
 export const createStockController = async (req, res) => {
     const newStock = req.body;
@@ -84,16 +91,6 @@ export const getStocksByPriceRangeController = async (req, res) => {
         res.status(200).json(stocks);
     } catch (error) {
         console.error("Error fetching stocks by price range:", error);
-        res.status(500).json({ error: "Internal server error" });
-    }
-};
-
-export const getPendingStocksController = async (req, res) => {
-    try {
-        const stocks = await getPendingStocks();
-        res.status(200).json(stocks);
-    } catch (error) {
-        console.error("Error fetching pending stocks:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 };

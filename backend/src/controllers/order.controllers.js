@@ -1,4 +1,10 @@
-import { getOrders, getOrderById, getOrdersBySymbol, createOrder, updateOrderStatus,  } from "../models/order.models.js";
+import { 
+    getOrders, 
+    getOrderById, 
+    getOrdersBySymbol, 
+    createOrder, 
+    updateOrderStatus 
+} from "../models/order.models.js";
 
 export const createOrderController = async (req, res) => {
     const orderData = req.body;

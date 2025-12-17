@@ -1,17 +1,18 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import { router as stockRoutes } from "./routes/stock.routes.js";
 import { Welcome } from "./services/userMsg.js";
 import { router as userRoutes } from "./routes/user.routes.js";
 import { router as transactionRoutes } from "./routes/transaction.route.js";
 import { router as orderRoutes } from "./routes/order.routes.js";
 import { router as authRoutes } from "./routes/auth.routes.js";
+import {router as walletRoutes} from "./routes/wallet.routes.js";
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 2000;
-const DB_URI = process.env.DB_URI;
 
 
 app.use(express.json());
@@ -21,6 +22,8 @@ app.use(
     credentials: true,
   })
 );
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
   res.send(Welcome("Ghost Hunter"));
@@ -30,7 +33,8 @@ app.use("/api/stocks", stockRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/orders", orderRoutes);
-app.use("/api/auth", authRoutes); // For authentication-related routes
+app.use("/api/auth", authRoutes); 
+app.use("/api/wallet", walletRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

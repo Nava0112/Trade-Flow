@@ -1,4 +1,5 @@
 import db from '../db/knex.js';
+import bcrypt from 'bcrypt';
 
 export const getUsers = async () => {
     return await db('users').select('*');
@@ -12,7 +13,7 @@ export const createUser = async (user) => {
     const newUser = {
         name: user.name,
         email: user.email,
-        password: user.password,
+        password: await hashPassword(user.password),
         balance: user.balance
     };
     const findUser = await getUserByEmail(newUser.email);
@@ -29,6 +30,10 @@ export const updateUserBalance = async (id, balance) => {
 }
 
 export const deleteUser = async (id) => {
+    const existingPortfolios = await db('portfolios').where({ user_id: id });
+    if (existingPortfolios.length > 0) {
+        await db('portfolios').where({ user_id: id }).del();
+    }
     return await db('users').where({ id }).del();
 }
 
@@ -37,3 +42,8 @@ export const updateUserPassword = async (id, password) => {
     return updatedUser;
 }
 
+export const hashPassword = async (password) => {
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    return hashedPassword;
+}
