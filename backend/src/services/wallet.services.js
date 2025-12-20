@@ -1,5 +1,5 @@
 import db from '../db/knex.js';
-import { getUserById } from '../models/user.model.js';
+import { getUserById } from '../models/user.models.js';
 import { createTransaction } from '../models/transaction.models.js';
 
 export const depositToWallet = async (userId, amount) => {

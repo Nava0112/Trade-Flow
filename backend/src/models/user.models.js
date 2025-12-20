@@ -9,6 +9,10 @@ export const getUserByEmail = async (email) => {
     return await db('users').where({ email }).first();
 }
 
+export const getUserById = async (id) => {
+    return await db('users').where({ id }).first();
+}
+
 export const createUser = async (user) => {
     const newUser = {
         name: user.name,
