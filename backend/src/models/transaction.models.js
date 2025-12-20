@@ -57,3 +57,4 @@ export const getPendingTransactions = async () => {
 export const getTransactionsByUserIdAndStatus = async (user_id, status) => {
     return await db('transactions').where({ user_id, status });
 };
+

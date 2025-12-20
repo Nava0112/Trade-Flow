@@ -2,7 +2,7 @@ import db from '../db/knex.js';
 import { getUserById } from '../models/user.models.js';
 import { createTransaction } from '../models/transaction.models.js';
 
-export const depositToWallet = async (userId, amount) => {
+export const createDeposit = async (userId, amount) => {
     const user = await getUserById(userId);
     if (!user) throw new Error('User not found');
     if (amount <= 0) throw new Error('Deposit amount must be positive');

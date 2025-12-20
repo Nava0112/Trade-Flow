@@ -28,6 +28,15 @@ export const createUser = async (user) => {
     return createdUser;
 }
 
+export const getUserPortfolio = async (user_id) => {
+    return await db('portfolios').where({ user_id });
+}
+
+export const getUserWalletBalance = async (id) => {
+    const user = await db('users').where({ id }).first();
+    return user.balance;
+}
+
 export const updateUserBalance = async (id, balance) => {
     const [updatedUser] = await db('users').where({ id }).update({ balance }).returning('*');
     return updatedUser;
