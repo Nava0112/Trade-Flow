@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { getUserIdByTransactionId } from "../models/user.models.js";
+import { getUserByTransactionId } from "../models/user.models.js";
 
 
 export const verifyToken = (req, res, next) => {
@@ -46,7 +46,7 @@ export const isSelfOrAdmin = (req, res, next) => {
 export const isTransactionOwnerOrAdmin = async (req, res, next) => {
   const transactionId = req.params.id;
 
-  const ownerId = await getUserIdByTransactionId(transactionId);
+  const ownerId = await getUserByTransactionId(transactionId);
   if (!ownerId) {
     return res.status(404).json({ error: "Transaction not found" });
   }

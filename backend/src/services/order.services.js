@@ -1,101 +1,60 @@
 import db from "../db/knex.js";
-import { getUserById } from "../models/user.models.js";
+import { getUserById, updateUserBalance  } from "../models/user.models.js";
 import { getStockBySymbol } from "../models/stock.models.js";
+import { updatePortfolioForBuyService, updatePortfolioForSellService } from "./portfolio.services.js";
 
 export const createBuyOrderService = async (orderData) => {
     const { user_id, symbol, quantity, price } = validateOrderData(orderData);
-
-    if (!user_id || !symbol || quantity <= 0 || price <= 0) {
-        throw new Error("Invalid order data");
-    }
-
+    if (!user_id || !symbol || quantity <= 0 || price <= 0) throw new Error("Invalid order data");
     const totalCost = quantity * price;
 
     return await db.transaction(async (trx) => {
-        const user = await trx("users")
-            .where({ id: user_id })
-            .forUpdate()
-            .first();
-
+        const user = await trx("users").where({ id: user_id }).forUpdate().first();
         if (!user) throw new Error("User not found");
 
         const stock = await getStockBySymbol(symbol);
         if (!stock) throw new Error("Stock not found");
 
-        if (user.balance < totalCost) {
-            throw new Error("Insufficient balance");
-        }
+        if (user.balance < totalCost) throw new Error("Insufficient balance");
 
-        await trx("users")
-            .where({ id: user_id })
-            .update({
-                balance: user.balance - totalCost,
-                locked_balance: (user.locked_balance || 0) + totalCost
-            });
-
-        const [order] = await trx("orders")
-            .insert({
-                user_id,
-                symbol,
-                quantity,
-                price,
-                type: "BUY",
-                status: "PENDING",
-                created_at: trx.fn.now()
-            })
-            .returning("*");
+        const order = await createOrder({ user_id, symbol, quantity, price, type: "BUY", status: "PENDING" }, trx);
+        await createTransaction(user_id, "BUY", totalCost, "PENDING", order.id, trx);
+        await updatePortfolioForBuyService(user_id, symbol, quantity, price, trx);
+        await updateUserBalance(user_id, user.balance - totalCost, trx);
 
         return order;
     });
 };
+
 
 
 export const createSellOrderService = async (orderData) => {
     const { user_id, symbol, quantity, price } = validateOrderData(orderData);
-
-    if (!user_id || !symbol || quantity <= 0 || price <= 0) {
-        throw new Error("Invalid order data");
-    }
+    if (!user_id || !symbol || quantity <= 0 || price <= 0) throw new Error("Invalid order data");
 
     return await db.transaction(async (trx) => {
-        const portfolio = await trx("portfolios")
-            .where({ user_id, symbol })
-            .forUpdate()
-            .first();
+        const portfolio = await getPortfolioByUserAndSymbol(user_id, symbol, trx);
+        if (!portfolio) throw new Error("Stock not owned");
 
-        if (!portfolio) {
-            throw new Error("Stock not owned");
-        }
-
-        const availableQty =
-            portfolio.quantity - (portfolio.locked_quantity || 0);
-
-        if (availableQty < quantity) {
-            throw new Error("Insufficient stock quantity");
-        }
-
-        await trx("portfolios")
-            .where({ user_id, symbol })
-            .update({
-                locked_quantity:
-                    (portfolio.locked_quantity || 0) + quantity
-            });
-
-        const [order] = await trx("orders")
-            .insert({
-                user_id,
-                symbol,
-                quantity,
-                price,
-                type: "SELL",
-                status: "PENDING",
-                created_at: trx.fn.now()
-            })
-            .returning("*");
+        const availableQty = portfolio.quantity - (portfolio.locked_quantity || 0);
+        if (availableQty < quantity) throw new Error("Insufficient stock quantity");
+        await updatePortfolioForSellService(user_id, symbol, quantity, trx);
+        const order = await createOrder(
+            { user_id, symbol, quantity, price, type: "SELL", status: "PENDING" },
+            trx
+        );
+        const transaction = await createTransaction(
+            user_id,
+            "SELL", quantity * price,
+            "PENDING",
+            order.id,
+            trx
+        );
 
         return order;
     });
 };
+
 
 
 export const validateOrderData = (orderData) => {
