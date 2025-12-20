@@ -6,12 +6,12 @@ import {
     deleteUserController,
     updateUserPasswordController
 } from '../controllers/user.controllers.js';
-import { isAdminRoute, isSelfRoute } from '../middleware/auth.middleware.js';
+import { verifyToken, isAdmin, isSelfOrAdmin } from '../middleware/auth.middleware.js';
 
 export const router = express.Router();
 router.post('/', createUserController);
-router.get('/', isAdminRoute, getAllUsersController);
-router.get('/email/:email', getUserByEmailController);
-router.delete('/:id', isSelfRoute, deleteUserController);
-router.put('/:id/password', isSelfRoute, updateUserPasswordController);
+router.get('/', isAdmin, getAllUsersController);
+router.get('/email/:email', verifyToken, getUserByEmailController);
+router.delete('/:id', isSelfOrAdmin, deleteUserController);
+router.put('/:id/password', isSelfOrAdmin, updateUserPasswordController);
     

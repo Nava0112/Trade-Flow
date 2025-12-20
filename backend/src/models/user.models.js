@@ -34,6 +34,9 @@ export const getUserPortfolio = async (user_id) => {
 
 export const getUserWalletBalance = async (id) => {
     const user = await db('users').where({ id }).first();
+    if (!user) {
+        throw new Error('User not found');
+    }
     return user.balance;
 }
 

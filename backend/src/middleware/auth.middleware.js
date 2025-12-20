@@ -1,79 +1,62 @@
 import jwt from "jsonwebtoken";
-import { getUserByTransactionId } from "../models/user.models.js";
+import { getUserIdByTransactionId } from "../models/user.models.js";
 
-export const isAdminRoute = (req, res, next) => {
+
+export const verifyToken = (req, res, next) => {
+  try {
     const token = req.cookies.accessToken;
     if (!token) {
-        return res.status(401).json({ error: "Unauthorized" });
+      return res.status(401).json({ error: "Unauthorized" });
     }
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ error: "Unauthorized" });
-        }
-        if (decoded.role !== "admin") {
-            return res.status(403).json({ error: "Forbidden" });    
-        }
-        next();
-    });
-}
 
-export const isSelfRoute = (req, res, next) => {
-    const token = req.cookies.accessToken;
-    if (!token) {
-        return res.status(401).json({ error: "Unauthorized" });
-    }
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ error: "Unauthorized" });
-        }
-        const normalizedDecodedId = String(decoded?.id);
-        const normalizedParamId = String(req.params.userId || req.params.id);
-        if (normalizedDecodedId !== normalizedParamId && decoded.role !== "admin") {
-            return res.status(403).json({ error: "Forbidden" });    
-        }
-        next();
-    });
-}
+    const decoded = jwt.verify(
+      token,
+      process.env.ACCESS_TOKEN_SECRET
+    );
+
+    req.user = decoded; // { id, email, role }
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+};
 
 
-export const isTransactionOwner = async (req, res, next) => {
-    const token = req.cookies.accessToken;
-    if (!token) {
-        return res.status(401).json({ error: "Unauthorized" });
-    }
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ error: "Unauthorized" });
-        }
-        let user;
-        try {
-            user = await getUserByTransactionId(req.params.id);
-        } catch (err) {
-            return res.status(404).json({ error: "Transaction not found" });
-        }
-        if (!user) {
-            return res.status(404).json({ error: "Transaction not found" });
-        }
-        
-        const normalizedDecodedId = String(decoded?.id);
-        const normalizedUserId = String(user?.id);
-        
-        if (normalizedDecodedId !== normalizedUserId && decoded.role !== "admin") {
-            return res.status(403).json({ error: "Forbidden" });
-        }
-        next();
-    });
-}
+export const isAdmin = (req, res, next) => {
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+  next();
+};
 
-export const onlyVerifyToken = (req, res, next) => {
-    const token = req.cookies.accessToken;
-    if (!token) {
-        return res.status(401).json({ error: "Unauthorized" });
-    }
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ error: "Unauthorized" });
-        }
-        next();
-    });
-}
+
+export const isSelfOrAdmin = (req, res, next) => {
+  const paramUserId = String(req.params.userId);
+  const loggedInUserId = String(req.user.id);
+
+  if (
+    paramUserId !== loggedInUserId &&
+    req.user.role !== "admin"
+  ) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+  next();
+};
+
+export const isTransactionOwnerOrAdmin = async (req, res, next) => {
+  const transactionId = req.params.id;
+
+  const ownerId = await getUserIdByTransactionId(transactionId);
+  if (!ownerId) {
+    return res.status(404).json({ error: "Transaction not found" });
+  }
+
+  if (
+    String(ownerId) !== String(req.user.id) &&
+    req.user.role !== "admin"
+  ) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+
+  next();
+};
