@@ -62,7 +62,7 @@ export const deleteStockBySymbolController = async (req, res) => {
         }
     } catch (error) {
         console.error("Error deleting stock:", error);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({ error: "Cascade delete error" });
     }
 };
 

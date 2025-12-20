@@ -10,8 +10,8 @@ import { verifyToken, isAdmin, isSelfOrAdmin } from '../middleware/auth.middlewa
 
 export const router = express.Router();
 router.post('/', createUserController);
-router.get('/', isAdmin, getAllUsersController);
+router.get('/',verifyToken, isAdmin, getAllUsersController);
 router.get('/email/:email', verifyToken, getUserByEmailController);
-router.delete('/:id', isSelfOrAdmin, deleteUserController);
-router.put('/:id/password', isSelfOrAdmin, updateUserPasswordController);
+router.delete('/:id', verifyToken, isSelfOrAdmin, deleteUserController);
+router.put('/:id/password', verifyToken, isSelfOrAdmin, updateUserPasswordController);
     

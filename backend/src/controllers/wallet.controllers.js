@@ -49,18 +49,11 @@ export const confirmDepositController = async (req, res) => {
 };
 
 
-export const getUserWalletBalanceController = async (req, res) => {
+export const getUserWalletBalanceController = async (req, res, next) => {
     try {
-        const email = req.params.email || req.query.email || req.body.email;
-        
-        if (!email) {
-            return res.status(400).json({ error: 'Email is required' });
-        }
-        const balance = await getUserWalletBalance(email);
-        return res.status(200).json({
-            success: true,
-            data: { balance }
-        });
+        const { id } = req.params;
+        const balance = await getUserWalletBalance(id);
+        res.status(200).json({ balance });
     } catch (err) {
         next(err);
     }
