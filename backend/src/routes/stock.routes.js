@@ -7,15 +7,15 @@ import {
     updateStockPriceController,
     getStocksByPriceRangeController,
 } from '../controllers/stock.controllers.js';
-import { isAdminRoute, onlyVerifyToken } from '../middleware/auth.middleware.js';
+import { verifyToken, isAdmin } from '../middleware/auth.middleware.js';
 
 export const router = express.Router();
 
-router.post('/', isAdminRoute, createStockController);
-router.get('/', onlyVerifyToken, getAllStocksController);
-router.get('/price-range', onlyVerifyToken, getStocksByPriceRangeController);
-router.get('/:symbol', onlyVerifyToken, getStockBySymbolController);
-router.put('/:symbol/price', isAdminRoute, updateStockPriceController);
-router.delete('/:symbol', isAdminRoute, deleteStockBySymbolController);
+router.post('/', isAdmin, createStockController);
+router.get('/', verifyToken, getAllStocksController);
+router.get('/price-range', verifyToken, getStocksByPriceRangeController);
+router.get('/:symbol', verifyToken, getStockBySymbolController);
+router.put('/:symbol/price', isAdmin, updateStockPriceController);
+router.delete('/:symbol', isAdmin, deleteStockBySymbolController);
 
 

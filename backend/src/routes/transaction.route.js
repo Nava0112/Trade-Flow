@@ -1,5 +1,5 @@
 import express from 'express';
-import { isAdminRoute, isTransactionOwner, isSelfRoute } from '../middleware/auth.middleware.js';
+import { verifyToken, isAdmin, isTransactionOwnerOrAdmin } from '../middleware/auth.middleware.js';
 import {
   getAllTransactionsController,
   getTransactionByIdController,
@@ -9,7 +9,7 @@ import {
 
 export const router = express.Router();
 
-router.get('/', isAdminRoute, getAllTransactionsController);
-router.get('/user/:userId', isSelfRoute, getUserTransactionsController);
-router.get('/:id', isTransactionOwner, getTransactionByIdController);
-router.delete('/:id', isAdminRoute, deleteTransactionController);
+router.get('/', isAdmin, getAllTransactionsController);
+router.get('/user/:userId', verifyToken, getUserTransactionsController);
+router.get('/:Transactionid', isTransactionOwnerOrAdmin, getTransactionByIdController);
+router.delete('/:Transactionid', isAdmin, deleteTransactionController);
