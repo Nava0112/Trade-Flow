@@ -16,13 +16,13 @@ export const createOrderController = async (req, res) => {
                 error: "Missing required fields" 
             });
         }
-        const newOrder = await createOrder({ user_id, symbol, quantity, price, order_type });
-        const transactionType = order_type === 'BUY' ? 'BUY' : 'SELL';
+        const newOrder = await createOrder(orderData);
+        const transactionType = orderData.order_type === 'BUY' ? 'BUY' : 'SELL';
         if (transactionType === 'BUY') {
             await createTransaction({
-                user_id: user_id,
+                user_id: orderData.user_id,
                 type: transactionType,
-                amount: quantity * price,
+                amount: orderData.quantity * orderData.price,
                 status: 'PENDING',
                 order_id: newOrder.id
             });
