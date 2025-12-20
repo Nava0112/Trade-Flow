@@ -8,13 +8,13 @@ import {
 } from '../models/stock.models.js';
 
 export const createStockController = async (req, res) => {
-    const newStock = req.body;
-    try {
-        const findStock = await getStockBySymbol(newStock.symbol);
+    const { symbol } = req.body;
+    try { 
+        const findStock = await getStockBySymbol(symbol);
         if (findStock) {
             return res.status(400).json({ error: "Stock with this symbol already exists" });
         }
-        const addedStock = await addStock(newStock);
+        const addedStock = await addStock({ symbol });
         res.status(201).json(addedStock);
     } catch (error) {
         console.error("Error adding stock:", error);

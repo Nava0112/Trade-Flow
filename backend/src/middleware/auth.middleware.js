@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { getuserByTransactionId } from "../models/user.models.js";
+import { getUserByTransactionId } from "../models/user.models.js";
 
 export const isAdminRoute = (req, res, next) => {
     const token = req.cookies.accessToken;
@@ -47,7 +47,7 @@ export const isTransactionOwner = async (req, res, next) => {
         }
         let user;
         try {
-            user = await getuserByTransactionId(req.params.id);
+            user = await getUserByTransactionId(req.params.id);
         } catch (err) {
             return res.status(404).json({ error: "Transaction not found" });
         }

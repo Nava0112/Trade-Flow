@@ -9,9 +9,9 @@ import { createTransaction } from "../models/transaction.models.js";
 import { createBuyOrderService, createSellOrderService } from "../services/order.services.js";
 
 export const createOrderController = async (req, res) => {
-    const orderData = req.body;
+    const { user_id, symbol, quantity, price, order_type } = req.body;
     try {
-        if (!orderData.user_id || !orderData.symbol || !orderData.quantity || !orderData.price || !orderData.order_type) {
+        if (!user_id || !symbol || !quantity || !price || !order_type) {
             return res.status(400).json({ 
                 error: "Missing required fields" 
             });
