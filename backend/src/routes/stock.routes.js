@@ -11,11 +11,11 @@ import { verifyToken, isAdmin } from '../middleware/auth.middleware.js';
 
 export const router = express.Router();
 
-router.post('/', isAdmin, createStockController);
+router.post('/',verifyToken,  isAdmin, createStockController);
 router.get('/', verifyToken, getAllStocksController);
 router.get('/price-range', verifyToken, getStocksByPriceRangeController);
 router.get('/:symbol', verifyToken, getStockBySymbolController);
-router.put('/:symbol/price', isAdmin, updateStockPriceController);
-router.delete('/:symbol', isAdmin, deleteStockBySymbolController);
+router.put('/:symbol/price', verifyToken, isAdmin, updateStockPriceController);
+router.delete('/:symbol', verifyToken, isAdmin, deleteStockBySymbolController);
 
 

@@ -54,6 +54,7 @@ export const deleteUser = async (id) => {
 }
 
 export const updateUserPassword = async (id, password) => {
+    password =  await hashPassword(password);
     const [updatedUser] = await db('users').where({ id }).update({ password }).returning('*');
     return updatedUser;
 }

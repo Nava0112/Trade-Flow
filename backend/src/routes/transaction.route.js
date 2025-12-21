@@ -9,7 +9,7 @@ import {
 
 export const router = express.Router();
 
-router.get('/', isAdmin, getAllTransactionsController);
+router.get('/',verifyToken, isAdmin, getAllTransactionsController);
 router.get('/user/:userId', verifyToken, getUserTransactionsController);
-router.get('/:Transactionid', isTransactionOwnerOrAdmin, getTransactionByIdController);
-router.delete('/:Transactionid', isAdmin, deleteTransactionController);
+router.get('/:Transactionid', verifyToken, isTransactionOwnerOrAdmin, getTransactionByIdController);
+router.delete('/:Transactionid', verifyToken, isAdmin, deleteTransactionController);

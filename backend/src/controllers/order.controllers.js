@@ -9,47 +9,47 @@ import { createTransaction } from "../models/transaction.models.js";
 import { createBuyOrderService, createSellOrderService } from "../services/order.services.js";
 
 export const createOrderController = async (req, res) => {
-    const { user_id, symbol, quantity, price, order_type } = req.body;
     try {
+        const { user_id, symbol, quantity, price, order_type } = req.body;
+
         if (!user_id || !symbol || !quantity || !price || !order_type) {
-            return res.status(400).json({ 
-                error: "Missing required fields" 
+            return res.status(400).json({
+                error: "Missing required fields"
             });
         }
-        const newOrder = await createOrder({ user_id, symbol, quantity, price, order_type });
-        const transactionType = order_type === 'BUY' ? 'BUY' : 'SELL';
-        if (transactionType === 'BUY') {
-            await createTransaction({
-                user_id: user_id,
-                type: transactionType,
-                amount: quantity * price,
-                status: 'PENDING',
-                order_id: newOrder.id
+
+        if (!["BUY", "SELL"].includes(order_type)) {
+            return res.status(400).json({
+                error: "Invalid order type"
             });
-            try {
-                await createBuyOrderService(newOrder);
-            } catch (err) {
-                console.error(`❌ Logging error for order ${newOrder.id}:`, err.message);
-            }
+        }
+
+        let order;
+
+        if (order_type === "BUY") {
+            order = await createBuyOrderService({
+                user_id,
+                symbol,
+                quantity,
+                price
+            });
         } else {
-            await createTransaction({
-                user_id: user_id,
-                type: transactionType,
-                amount: quantity * price,
-                status: 'PENDING',
-                order_id: newOrder.id
+            order = await createSellOrderService({
+                user_id,
+                symbol,
+                quantity,
+                price
             });
-            try {
-                await createSellOrderService(newOrder);
-            } catch (err) {
-                console.error(`❌ Logging error for order ${newOrder.id}:`, err.message);
-            }
         }
-        res.status(201).json(newOrder);
+
+        return res.status(201).json(order);
+
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("Create order error:", error.message);
+        return res.status(500).json({ error: error.message });
     }
 };
+
 
 export const getAllOrdersController = async (req, res) => {
     try {

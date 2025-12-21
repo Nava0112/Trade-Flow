@@ -10,6 +10,33 @@ export const createDeposit = async (userId, amount) => {
     return await createTransaction(userId, 'DEPOSIT', amount, 'PENDING', null);
 };
 
+export const lockUserBalance = async (userId, amount, trx) => {
+    const user = await trx("users")
+        .where({ id: userId })
+        .forUpdate()
+        .first();
+
+    if (!user) throw new Error("User not found");
+
+    const available = user.balance - user.locked_balance;
+    if (available < amount) throw new Error("Insufficient balance");
+
+    await trx("users")
+        .where({ id: userId })
+        .update({
+            locked_balance: user.locked_balance + amount,
+            updated_at: trx.fn.now()
+        });
+};
+
+export const unlockUserBalance = async (userId, amount, trx) => {
+    await trx("users")
+        .where({ id: userId })
+        .decrement("locked_balance", amount)
+        .update({ updated_at: trx.fn.now() });
+};
+
+
 export const confirmDeposit = async (transactionId) => {
     return await db.transaction(async (trx) => {
         const transaction = await trx('transactions')

@@ -13,6 +13,6 @@ export const router = express.Router();
 
 router.get("/", verifyToken, getAllOrdersController);
 router.get("/:id", verifyToken, getOrderByIdController);
-router.post("/", isAdmin, createOrderController);
-router.put("/:id/status", isAdmin, updateOrderStatusController);
+router.post("/", verifyToken, isAdmin, createOrderController);
+router.put("/:id/status", verifyToken, isAdmin, updateOrderStatusController);
 router.get("/symbol/:symbol", verifyToken, getOrdersBySymbolController);
