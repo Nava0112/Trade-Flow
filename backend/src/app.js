@@ -8,7 +8,10 @@ import { router as userRoutes } from "./routes/user.routes.js";
 import { router as transactionRoutes } from "./routes/transaction.route.js";
 import { router as orderRoutes } from "./routes/order.routes.js";
 import { router as authRoutes } from "./routes/auth.routes.js";
-import {router as walletRoutes} from "./routes/wallet.routes.js";
+import { router as walletRoutes } from "./routes/wallet.routes.js";
+import { startDepositWorker } from "./workers/transaction.worker.js";
+import { hydrateOrderBook } from "./market/hydration.js";
+
 dotenv.config();
 
 const app = express();
@@ -33,11 +36,17 @@ app.use("/api/stocks", stockRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/orders", orderRoutes);
-app.use("/api/auth", authRoutes); 
+app.use("/api/auth", authRoutes);
 app.use("/api/wallet", walletRoutes);
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+const startServer = async () => {
+  await hydrateOrderBook();
+  startDepositWorker();
+  app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+  });
+};
+
+startServer();
 
 export default app;
