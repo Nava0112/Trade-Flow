@@ -1,7 +1,9 @@
 import db from '../db/knex.js';
 import { confirmDeposit } from '../services/wallet.services.js';
 
-const INTERVAL_MS = 5000;
+// Use safe intervals: 1s in development/test, 10s in production
+const isDevOrTest = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
+const INTERVAL_MS = isDevOrTest ? 1000 : 10000;
 
 export function startDepositWorker() {
   console.log('Deposit worker started');

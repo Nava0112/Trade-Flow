@@ -11,21 +11,41 @@ function App() {
 
   // Common fetch function
   const apiCall = async (endpoint, method = 'GET', body = null) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
     try {
       const options = {
-        method, 
+        method,
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // For cookies
+        credentials: 'include',
+        signal: controller.signal,
       };
-      
       if (body) options.body = JSON.stringify(body);
-      
+
       const res = await fetch(`${BASE_URL}${endpoint}`, options);
-      const data = await res.json();
-      setResponse(JSON.stringify(data, null, 2));
-      return data;
+      const contentType = res.headers.get('content-type') || '';
+      let payload;
+      if (contentType.includes('application/json')) {
+        payload = await res.json();
+      } else {
+        payload = await res.text();
+      }
+
+      if (!res.ok) {
+        const msg = typeof payload === 'string' ? payload : JSON.stringify(payload);
+        const err = new Error(`HTTP ${res.status} ${res.statusText}: ${msg}`);
+        setResponse(err.message);
+        throw err;
+      }
+
+      setResponse(typeof payload === 'string' ? payload : JSON.stringify(payload, null, 2));
+      return payload;
     } catch (error) {
-      setResponse(`Error: ${error.message}`);
+      const message = error.name === 'AbortError' ? 'Request timed out after 10s' : `Error: ${error.message}`;
+      setResponse(message);
+      throw error;
+    } finally {
+      clearTimeout(timeout);
     }
   };
 
@@ -33,6 +53,31 @@ function App() {
   const AuthSection = () => {
     const [signupData, setSignupData] = useState({ email: '', password: '', name: '', balance: 10000 });
     const [loginData, setLoginData] = useState({ email: '', password: '' });
+
+    const handleSignup = async () => {
+      const email = signupData.email.trim();
+      const password = signupData.password;
+      const name = signupData.name.trim();
+      const balanceNum = parseFloat(signupData.balance);
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setResponse('Invalid email format');
+        return;
+      }
+      if (!password || password.length < 8) {
+        setResponse('Password must be at least 8 characters');
+        return;
+      }
+      if (!Number.isFinite(balanceNum) || balanceNum < 0) {
+        setResponse('Balance must be a non-negative number');
+        return;
+      }
+
+      try {
+        await apiCall('/auth/signup', 'POST', { email, password, name, balance: balanceNum });
+      } catch {}
+    };
 
     return (
       <div className="section">
@@ -48,7 +93,7 @@ function App() {
             onChange={e => setSignupData({...signupData, name: e.target.value})} />
           <input type="number" placeholder="Balance" value={signupData.balance}
             onChange={e => setSignupData({...signupData, balance: e.target.value})} />
-          <button onClick={() => apiCall('/auth/signup', 'POST', signupData)}>Sign Up</button>
+          <button onClick={handleSignup}>Sign Up</button>
         </div>
 
         <div className="form-group">
@@ -58,10 +103,16 @@ function App() {
           <input type="password" placeholder="Password" value={loginData.password}
             onChange={e => setLoginData({...loginData, password: e.target.value})} />
           <button onClick={async () => {
-            const data = await apiCall('/auth/login', 'POST', loginData);
-            if (data) {
-              setIsLoggedIn(true);
-              setUserData(data.user);
+            try {
+              const data = await apiCall('/auth/login', 'POST', loginData);
+              if (data && typeof data === 'object' && data.user && typeof data.user === 'object') {
+                setIsLoggedIn(true);
+                setUserData(data.user);
+              } else {
+                setResponse('Invalid login response');
+              }
+            } catch (err) {
+              // apiCall already setResponse
             }
           }}>Login</button>
         </div>
@@ -105,7 +156,19 @@ function App() {
               onChange={e => setPriceRange({...priceRange, min: e.target.value})} />
             <input type="number" placeholder="Max Price" value={priceRange.max}
               onChange={e => setPriceRange({...priceRange, max: e.target.value})} />
-            <button onClick={() => apiCall(`/stocks/price-range?min=${priceRange.min}&max=${priceRange.max}`, 'GET')}>
+            <button onClick={() => {
+              const min = parseFloat(priceRange.min);
+              const max = parseFloat(priceRange.max);
+              if (!Number.isFinite(min) || !Number.isFinite(max) || min < 0 || max < 0) {
+                setResponse('Please enter valid non-negative min and max prices');
+                return;
+              }
+              if (min > max) {
+                setResponse('Min price must be less than or equal to max price');
+                return;
+              }
+              apiCall(`/stocks/price-range?min=${min}&max=${max}`, 'GET');
+            }}>
               Get by Price Range
             </button>
           </div>
@@ -134,6 +197,34 @@ function App() {
 
   // Orders Components
   const OrdersSection = () => {
+        const handleCreateOrder = async () => {
+          const user_id = parseInt(orderData.user_id, 10);
+          const quantity = parseInt(orderData.quantity, 10);
+          const price = parseFloat(orderData.price);
+          const symbol = (orderData.symbol || '').trim();
+          const order_type = orderData.order_type;
+
+          if (!Number.isInteger(user_id) || user_id <= 0) {
+            setResponse('Invalid user ID');
+            return;
+          }
+          if (!symbol) {
+            setResponse('Symbol is required');
+            return;
+          }
+          if (!Number.isInteger(quantity) || quantity <= 0) {
+            setResponse('Quantity must be a positive integer');
+            return;
+          }
+          if (!Number.isFinite(price) || price <= 0) {
+            setResponse('Price must be a positive number');
+            return;
+          }
+
+          try {
+            await apiCall('/orders', 'POST', { user_id, symbol, quantity, price, order_type });
+          } catch {}
+        };
     const [orderData, setOrderData] = useState({
       user_id: '', symbol: '', quantity: '', price: '', order_type: 'BUY'
     });
@@ -159,15 +250,15 @@ function App() {
             <option value="BUY">BUY</option>
             <option value="SELL">SELL</option>
           </select>
-          <button onClick={() => apiCall('/orders', 'POST', orderData)}>Create Order</button>
+          <button onClick={handleCreateOrder}>Create Order</button>
         </div>
 
         <div className="form-group">
           <h3>Get Orders</h3>
           <button onClick={() => apiCall('/orders', 'GET')}>Get All Orders</button>
-          <button onClick={() => apiCall(`/orders/${orderId}`, 'GET')}>Get Order by ID</button>
           <input type="text" placeholder="Order ID" value={orderId}
             onChange={e => setOrderId(e.target.value)} />
+          <button onClick={() => apiCall(`/orders/${orderId}`, 'GET')}>Get Order by ID</button>
         </div>
 
         <div className="form-group">

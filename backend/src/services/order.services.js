@@ -5,10 +5,10 @@ import { addBuyOrderToBook, addSellOrderToBook } from "../market/orderBook.js";
 import { triggerMatchingEngine } from "../market/market.trigger.js";
 
 export const createBuyOrderService = async ({ user_id, symbol, quantity, price }) => {
-    return await db.transaction(async (trx) => {
+    const order = await db.transaction(async (trx) => {
         const totalCost = quantity * price;
 
-        const [order] = await trx("orders")
+        const [inserted] = await trx("orders")
             .insert({
                 user_id,
                 symbol,
@@ -21,17 +21,18 @@ export const createBuyOrderService = async ({ user_id, symbol, quantity, price }
             .returning("*");
 
         await lockUserBalance(user_id, totalCost, trx);
-
-        addBuyOrderToBook(order);
-        triggerMatchingEngine(symbol);
-
-        return order;
+        return inserted;
     });
+
+    // In-memory operations after successful commit
+    addBuyOrderToBook(order);
+    triggerMatchingEngine(symbol);
+    return order;
 };
 
 export const createSellOrderService = async ({ user_id, symbol, quantity, price }) => {
-    return await db.transaction(async (trx) => {
-        const [order] = await trx("orders")
+    const order = await db.transaction(async (trx) => {
+        const [inserted] = await trx("orders")
             .insert({
                 user_id,
                 symbol,
@@ -44,12 +45,13 @@ export const createSellOrderService = async ({ user_id, symbol, quantity, price 
             .returning("*");
 
         await lockStockQuantity(user_id, symbol, quantity, trx);
-
-        addSellOrderToBook(order);
-        triggerMatchingEngine(symbol);
-
-        return order;
+        return inserted;
     });
+
+    // In-memory operations after successful commit
+    addSellOrderToBook(order);
+    triggerMatchingEngine(symbol);
+    return order;
 };
 
 

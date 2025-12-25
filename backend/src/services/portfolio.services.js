@@ -45,8 +45,14 @@ export const lockStockQuantity = async (userId, symbol, quantity, trx) => {
 };
 
 export const unlockStockQuantity = async (userId, symbol, quantity, trx) => {
-    await trx("portfolios")
+    // Single atomic update: decrement locked_quantity and set updated_at
+    const affected = await trx("portfolios")
         .where({ user_id: userId, symbol })
-        .decrement("locked_quantity", quantity)
-        .update({ updated_at: trx.fn.now() });
+        .update({
+            locked_quantity: trx.raw("locked_quantity - ?", [quantity]),
+            updated_at: trx.fn.now()
+        });
+    if (!affected) {
+        throw new Error("Unlock stock failed: portfolio not found or quantity invalid");
+    }
 };

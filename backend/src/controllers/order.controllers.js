@@ -5,7 +5,8 @@ import {
     createOrder, 
     updateOrderStatus 
 } from "../models/order.models.js";
-import { createTransaction } from "../models/transaction.models.js";
+import { getUserById } from "../models/user.models.js";
+import { getStockBySymbol } from "../models/stock.models.js";
 import { createBuyOrderService, createSellOrderService } from "../services/order.services.js";
 
 export const createOrderController = async (req, res) => {
@@ -18,6 +19,18 @@ export const createOrderController = async (req, res) => {
             });
         }
 
+        const user = await getUserById(user_id);
+        if (!user) {
+            return res.status(404).json({
+                error: "User not found"
+            });
+        }
+        const symbolExists = await getStockBySymbol(symbol);
+        if (!symbolExists) {
+            return res.status(404).json({
+                error: "Symbol not found"
+            });
+        }
         if (!["BUY", "SELL"].includes(order_type)) {
             return res.status(400).json({
                 error: "Invalid order type"

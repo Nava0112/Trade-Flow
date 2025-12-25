@@ -11,6 +11,9 @@ export const createDeposit = async (userId, amount) => {
 };
 
 export const lockUserBalance = async (userId, amount, trx) => {
+    if (!Number.isFinite(amount) || amount <= 0) {
+        throw new Error("Invalid amount: must be a positive number");
+    }
     const user = await trx("users")
         .where({ id: userId })
         .forUpdate()
@@ -30,10 +33,31 @@ export const lockUserBalance = async (userId, amount, trx) => {
 };
 
 export const unlockUserBalance = async (userId, amount, trx) => {
-    await trx("users")
+    if (!Number.isFinite(amount) || amount <= 0) {
+        throw new Error("Invalid amount: must be a positive number");
+    }
+
+    const user = await trx("users")
         .where({ id: userId })
-        .decrement("locked_balance", amount)
-        .update({ updated_at: trx.fn.now() });
+        .forUpdate()
+        .first();
+
+    if (!user) throw new Error("User not found");
+    if (parseFloat(user.locked_balance) < amount) {
+        throw new Error("Insufficient locked balance");
+    }
+
+    const affected = await trx("users")
+        .where({ id: userId })
+        .andWhere("locked_balance", ">=", amount)
+        .update({
+            locked_balance: trx.raw("locked_balance - ?", [amount]),
+            updated_at: trx.fn.now()
+        });
+
+    if (!affected) {
+        throw new Error("Unlock failed: insufficient locked balance or user missing");
+    }
 };
 
 
