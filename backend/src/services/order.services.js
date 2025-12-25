@@ -21,10 +21,8 @@ export const createBuyOrderService = async ({ user_id, symbol, quantity, price }
             .returning("*");
 
         await lockUserBalance(user_id, totalCost, trx);
-
         addBuyOrderToBook(order);
         triggerMatchingEngine(symbol);
-
         return order;
     });
 };
