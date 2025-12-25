@@ -40,8 +40,14 @@ app.use("/api/auth", authRoutes);
 app.use("/api/wallet", walletRoutes);
 
 const startServer = async () => {
-  await hydrateOrderBook();
-  startDepositWorker();
+  try{
+    await hydrateOrderBook();
+    await startDepositWorker();
+  }
+  catch(err){
+    console.error("Failed to start server:", err.message);
+    process.exit(1);
+  }
   app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
   });

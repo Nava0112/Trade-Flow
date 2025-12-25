@@ -18,20 +18,20 @@ export const executeTrade = async (buyOrder, sellOrder, trx) => {
         quantity: tradeQty
     });
 
-    // 2. Update DB Orders
+    // 2. Update DB Orders (separate increment and update for safety)
     // Update BUY order
+    await trx("orders").where({ id: buyOrder.id }).increment("filled_quantity", tradeQty);
     await trx("orders")
         .where({ id: buyOrder.id })
-        .increment("filled_quantity", tradeQty)
         .update({
             status: remainingBuy === tradeQty ? "FILLED" : "PARTIAL",
             filled_at: remainingBuy === tradeQty ? trx.fn.now() : null
         });
 
     // Update SELL order
+    await trx("orders").where({ id: sellOrder.id }).increment("filled_quantity", tradeQty);
     await trx("orders")
         .where({ id: sellOrder.id })
-        .increment("filled_quantity", tradeQty)
         .update({
             status: remainingSell === tradeQty ? "FILLED" : "PARTIAL",
             filled_at: remainingSell === tradeQty ? trx.fn.now() : null
@@ -73,7 +73,7 @@ export const executeTrade = async (buyOrder, sellOrder, trx) => {
             .where({ symbol: buyOrder.symbol })
             .update({
                 price: tradePrice,
-                volume: db.raw('volume + ?', [tradeQty]),
+                volume: trx.raw('volume + ?', [tradeQty]),
                 day_high: newDayHigh,
                 day_low: newDayLow,
                 updated_at: trx.fn.now()

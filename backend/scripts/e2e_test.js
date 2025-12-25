@@ -85,19 +85,29 @@ async function runTest() {
             price: 150
         });
 
-        await sleep(1000); // Wait for async match? No, match is triggered immediately but is async.
-
         console.log("Alice places BUY Order: 5 AAPL @ $150...");
         // Alice wants to buy 5 at 150. Matches immediately.
-        await createBuyOrderService({
+        const buyOrder = await createBuyOrderService({
             user_id: userA.id,
             symbol: 'AAPL',
             quantity: 5,
             price: 150
         });
-
-        console.log("Waiting for Matching Engine...");
-        await sleep(2000);
+        
+        // Deterministic wait: poll order status until matched/filled or timeout
+        console.log("Waiting for Matching Engine (polling order status)...");
+        const timeoutMs = 8000;
+        const start = Date.now();
+        while (true) {
+            const current = await db('orders').where({ id: buyOrder.id }).first();
+            if (current && (current.status === 'FILLED' || current.status === 'PARTIAL')) {
+                break;
+            }
+            if (Date.now() - start > timeoutMs) {
+                throw new Error(`Matching engine timeout: order ${buyOrder.id} not filled within ${timeoutMs}ms`);
+            }
+            await sleep(200);
+        }
 
         // 6. Verify Results
         console.log("Verifying State...");
