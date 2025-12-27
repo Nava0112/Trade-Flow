@@ -18,13 +18,6 @@ export const createOrder = async (order) => {
         status: order.status
     };
     const [createdOrder] = await db('orders').insert(newOrder).returning('*');
-    const portfolioChanges = {
-        user_id: order.user_id,
-        symbol: order.symbol,
-        quantity: order.quantity,
-        price_per_unit_on_buy: order.price,
-        updated_at: knex.fn.now()
-    };
     return createdOrder;
 }
 
@@ -35,6 +28,12 @@ export const updateOrderStatus = async (id, status) => {
 
 export const deleteOrder = async (id) => {
     return await db('orders').where({ id }).del();
+}
+
+export const getPendingOrders = async () => {
+    return await db('orders').where({ status: 'PENDING' })
+    .groupBy('symbol')
+    .count('id as count');
 }
 
 export const getOrdersByUserId = async (user_id) => {

@@ -5,15 +5,17 @@ import { addBuyOrderToBook, addSellOrderToBook } from "../market/orderBook.js";
 import { triggerMatchingEngine } from "../market/market.trigger.js";
 
 export const createBuyOrderService = async ({ user_id, symbol, quantity, price }) => {
+    const qty = Number(quantity);
+    const prc = Number(price);
     const order = await db.transaction(async (trx) => {
-        const totalCost = quantity * price;
+        const totalCost = qty * prc;
 
         const [inserted] = await trx("orders")
             .insert({
                 user_id,
                 symbol,
-                quantity,
-                price,
+                quantity: qty,
+                price: prc,
                 order_type: "BUY",
                 status: "PENDING",
                 filled_quantity: 0
@@ -31,20 +33,22 @@ export const createBuyOrderService = async ({ user_id, symbol, quantity, price }
 };
 
 export const createSellOrderService = async ({ user_id, symbol, quantity, price }) => {
+    const qty = Number(quantity);
+    const prc = Number(price);
     const order = await db.transaction(async (trx) => {
         const [inserted] = await trx("orders")
             .insert({
                 user_id,
                 symbol,
-                quantity,
-                price,
+                quantity: qty,
+                price: prc,
                 order_type: "SELL",
                 status: "PENDING",
                 filled_quantity: 0
             })
             .returning("*");
 
-        await lockStockQuantity(user_id, symbol, quantity, trx);
+        await lockStockQuantity(user_id, symbol, qty, trx);
         return inserted;
     });
 
@@ -57,7 +61,9 @@ export const createSellOrderService = async ({ user_id, symbol, quantity, price 
 
 
 export const validateOrderData = (orderData) => {
-    const { user_id, symbol, quantity, price } = orderData;
+    const { user_id, symbol } = orderData;
+    const quantity = Number(orderData.quantity);
+    const price = Number(orderData.price);
 
     if (!user_id || !symbol || !quantity || !price) {
         throw new Error("Missing required order fields");

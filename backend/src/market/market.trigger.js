@@ -6,10 +6,9 @@ export const triggerMatchingEngine = (symbol) => {
         console.log(`Matching engine already in progress for symbol: ${symbol}`);
         return;
     }
-
+    matchingInProgress.add(symbol);
     setImmediate(async () => {
         try {
-            matchingInProgress.add(symbol);
             console.log(`Triggering matching engine for symbol: ${symbol}`);
             await matchOrdersForSymbol(symbol);
         } catch (err) {
