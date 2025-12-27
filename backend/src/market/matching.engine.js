@@ -5,6 +5,10 @@ import { executeTrade } from "./trade.execution.js";
 export const matchOrdersForSymbol = async (symbol) => {
     while (true) {
         const { bestBuy, bestSell } = getBestOrders(symbol);
+        if(bestBuy.user_id === bestSell.user_id) {
+            console.log(`Skipping matching orders for symbol: ${symbol} as both orders belong to the same user (User ID: ${bestBuy.user_id})`);
+            continue;
+        }
         if (!bestBuy || !bestSell) {
             console.log(`No more matching orders for symbol: ${symbol}`);
             break;

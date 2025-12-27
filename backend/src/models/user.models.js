@@ -13,6 +13,19 @@ export const getUserById = async (id) => {
     return await db('users').where({ id }).first();
 }
 
+export const createBotUser = async (bot) => {
+    const newBot = {
+        id: 0,
+        name: bot.name,
+        email: bot.email,
+        password: await hashPassword(bot.password),
+        role: 'BOT',
+        balance: bot.balance
+    };
+    const [createdBot] = await db('users').insert(newBot).returning('*');
+    return createdBot;
+}
+
 export const createUser = async (user) => {
     const newUser = {
         name: user.name,

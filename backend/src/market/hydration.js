@@ -1,5 +1,3 @@
-// src/market/hydration.js
-
 import db from "../db/knex.js";
 import {
     addBuyOrderToBook,
@@ -13,56 +11,54 @@ export const hydrateOrderBook = async () => {
     try {
         const BATCH_SIZE = 1000;
         let offset = 0;
-
-        while (true) {
-        const batch = await db("orders")
-            .where({ status: "PENDING" })
-            .orderBy("created_at", "asc")
-            .limit(BATCH_SIZE)
-            .offset(offset);
-
-        if (batch.length === 0) break;
-
-        // process batch here
-        console.log(`Processing ${batch.length} orders`);
-
-        offset += BATCH_SIZE;
-        }
-
         let count = 0;
 
-        for (const order of pendingOrders) {
-            // Normalize numeric fields
-            order.price = Number(order.price);
-            order.quantity = Number(order.quantity);
-            order.filled_quantity = Number(order.filled_quantity);
+        while (true) {
+            const batch = await db("orders")
+                .where({ status: "PENDING" })
+                .orderBy("created_at", "asc")
+                .limit(BATCH_SIZE)
+                .offset(offset);
 
-            if (!Number.isFinite(order.price) || order.price <= 0) {
-                console.warn(`Skipping order #${order.id} due to invalid price: ${order.price}`);
-                continue;
+            if (batch.length === 0) break;
+
+            console.log(`Processing ${batch.length} orders`);
+
+            for (const order of batch) {
+                const side = order.side || order.order_type;
+
+                const price = Number(order.price);
+                const quantity = Number(order.quantity);
+                const filled = Number(order.filled_quantity || 0);
+
+                if (!Number.isFinite(price) || price <= 0) continue;
+                if (!Number.isFinite(quantity) || quantity <= 0) continue;
+                if (side !== "BUY" && side !== "SELL") continue;
+
+                const normalizedOrder = {
+                    ...order,
+                    side,
+                    price,
+                    quantity,
+                    filled_quantity: filled
+                };
+
+                if (side === "BUY") {
+                    addBuyOrderToBook(normalizedOrder);
+                } else {
+                    addSellOrderToBook(normalizedOrder);
+                }
+
+                count++;
             }
-            if (!Number.isFinite(order.quantity) || order.quantity <= 0) {
-                console.warn(`Skipping order #${order.id} due to invalid quantity: ${order.quantity}`);
-                continue;
-            }
-            if (order.order_type === "BUY") {
-                addBuyOrderToBook(order);
-            } else if (order.order_type === "SELL") {
-                addSellOrderToBook(order);
-            }
-            else {
-                console.error(`Skipping order #${order.id} due to invalid order type: ${order.order_type}`);
-                continue;
-            }
-            count++;
+
+            offset += BATCH_SIZE;
         }
 
         console.log(`Order Book Hydrated: Loaded ${count} pending orders.`);
         console.log(JSON.stringify(getOrderBookSnapshot(), null, 2));
-
-
     } catch (error) {
-        console.error("Failed to hydrate order book:", error.message);
-        process.exit(1); // cannot start matching engine
+        console.error("Failed to hydrate order book:", error);
+        process.exit(1);
     }
 };

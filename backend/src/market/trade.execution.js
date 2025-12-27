@@ -1,13 +1,12 @@
 import { removeOrderFromBook } from "./orderBook.js";
 import { applyBuyToPortfolio } from "../models/portfolio.models.js";
-import db from "../db/knex.js";
 
 export const executeTrade = async (buyOrder, sellOrder, trx) => {
-    const remainingBuy = buyOrder.quantity - buyOrder.filled_quantity;
-    const remainingSell = sellOrder.quantity - sellOrder.filled_quantity;
+    const remainingBuy = Number(buyOrder.quantity) - Number(buyOrder.filled_quantity);
+    const remainingSell = Number(sellOrder.quantity) - Number(sellOrder.filled_quantity);
 
-    const tradeQty = Math.min(remainingBuy, remainingSell);
-    const tradePrice = sellOrder.price;
+    const tradeQty = Number(Math.min(remainingBuy, remainingSell));
+    const tradePrice = Number(sellOrder.price);
 
     // 1. Record Trade
     await trx("trades").insert({
@@ -38,8 +37,8 @@ export const executeTrade = async (buyOrder, sellOrder, trx) => {
         });
 
     // 3. Update In-Memory Order Objects (Critically Important for Matching Engine Loop)
-    buyOrder.filled_quantity += tradeQty;
-    sellOrder.filled_quantity += tradeQty;
+    buyOrder.filled_quantity = Number(buyOrder.filled_quantity) + tradeQty;
+    sellOrder.filled_quantity = Number(sellOrder.filled_quantity) + tradeQty;
 
     // 4. Asset Transfer
     // Buyer pays money (release lock, reduce balance)

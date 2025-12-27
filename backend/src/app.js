@@ -11,6 +11,7 @@ import { router as authRoutes } from "./routes/auth.routes.js";
 import { router as walletRoutes } from "./routes/wallet.routes.js";
 import { startDepositWorker } from "./workers/transaction.worker.js";
 import { hydrateOrderBook } from "./market/hydration.js";
+import { startMarketBot } from "./market/market.bot.js";
 
 dotenv.config();
 
@@ -50,6 +51,7 @@ const startServer = async () => {
   }
   app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
+    startMarketBot();
   });
 };
 
