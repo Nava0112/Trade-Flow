@@ -59,6 +59,5 @@ export const hydrateOrderBook = async () => {
         console.log(JSON.stringify(getOrderBookSnapshot(), null, 2));
     } catch (error) {
         console.error("Failed to hydrate order book:", error);
-        process.exit(1);
-    }
-};
+        throw error; // Let caller handle recovery/retry
+    }};

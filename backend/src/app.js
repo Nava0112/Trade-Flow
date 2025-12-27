@@ -43,7 +43,7 @@ app.use("/api/wallet", walletRoutes);
 const startServer = async () => {
   try{
     await hydrateOrderBook();
-    await startDepositWorker();
+    startDepositWorker();
   }
   catch(err){
     console.error("Failed to start server:", err.message);
@@ -54,7 +54,6 @@ const startServer = async () => {
     startMarketBot();
   });
 };
-
 startServer();
 
 export default app;
