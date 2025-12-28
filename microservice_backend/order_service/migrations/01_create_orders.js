@@ -3,9 +3,7 @@ export async function up(knex) {
         
         table.increments('id').primary();
         table.integer('user_id').unsigned().notNullable();
-        table.foreign('user_id').references('id').inTable('users').onDelete('CASCADE');
         table.string('symbol', 10).notNullable();
-        table.foreign('symbol').references('symbol').inTable('stocks').onDelete('RESTRICT');
         table.enum('order_type', ['BUY', 'SELL']).notNullable();
         table.integer('quantity').unsigned().notNullable();
         table.integer('filled_quantity').unsigned().defaultTo(0);
