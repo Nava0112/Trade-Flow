@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
-import { requestLogger } from "./middleware/logger.middleware.js";
-import { rateLimitMiddleware } from "./middleware/rateLimit.middleware.js";
+import { requestLogger } from "../middleware/logger.middleware.js";
+import { rateLimitMiddleware } from "../middleware/rateLimit.middleware.js";
 import { requestContext } from "../../shared/logger/requestContext.js";
 
 dotenv.config();
