@@ -1,4 +1,4 @@
-export const services = {
+const services = {
     auth : {
         host : "http://localhost:2002",
         routes : {
@@ -19,13 +19,14 @@ export const services = {
         }
     },
     order : {
-        host : "http://localhost:2004",
+        host : "http://localhost:2000",
         routes : {
             getAllOrders : "/",
             getOrderById : "/:id",
             getOrdersBySymbol : "/symbol/:symbol",
             createOrder : "/",
             updateOrder : "/:id",
+            updateOrderStatus : "/status/:id",
             deleteOrder : "/:id"
         }
     },
@@ -83,3 +84,5 @@ export const services = {
         }
     }    
 }
+
+export default services;

@@ -1,7 +1,8 @@
 import axios from "axios";
-
+import dotenv from "dotenv";
+dotenv.config();
 const userClient = axios.create({
-    baseURL: "http://localhost:2000",
+    baseURL: process.env.USER_SERVICE,
     headers: {
         "Content-Type": "application/json",
     },
@@ -20,7 +21,7 @@ export const createUser = async (user) => {
 
 export const getUserByEmail = async (email) => {
     try {
-        const response = await userClient.get(`/users/${email}`);
+        const response = await userClient.get(`/users/email/${email}`);
         return response.data;
     } catch (error) {
         console.error("Error getting user by email:", error);
