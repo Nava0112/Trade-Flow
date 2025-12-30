@@ -1,13 +1,9 @@
 import express from 'express';
-import {
-  confirmDepositController,
-  getUserWalletBalanceController,
-  createDepositController
-} from '../controllers/wallet.controllers.js';
-import { isSelfOrAdmin, isTransactionOwnerOrAdmin, verifyToken } from '../middleware/auth.middleware.js';
+import { forwardRequest } from '../utils/proxy.js';
+import { verifyToken, isSelfOrAdmin } from '../middleware/auth.middleware.js';
 
 export const router = express.Router();
 
-router.post('/deposit/:id',verifyToken, isSelfOrAdmin, createDepositController);
-router.get('/balance/:id', verifyToken, isSelfOrAdmin, getUserWalletBalanceController);
-router.post('/deposit/confirm/:transactionId', verifyToken, isTransactionOwnerOrAdmin, confirmDepositController);
+router.post('/deposit/:id',verifyToken, isSelfOrAdmin, forwardRequest("wallet", "createDeposit"));
+router.get('/balance/:id', verifyToken, isSelfOrAdmin, forwardRequest("wallet", "getUserWalletBalance"));
+router.post('/deposit/confirm/:transactionId', verifyToken, forwardRequest("wallet", "confirmDeposit"));

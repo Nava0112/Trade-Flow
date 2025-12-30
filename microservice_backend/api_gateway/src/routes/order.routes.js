@@ -1,18 +1,10 @@
-import {
-    createOrderController,
-    getAllOrdersController,
-    getOrderByIdController,
-    updateOrderStatusController,
-    getOrdersBySymbolController
-} from "../controllers/order.controllers.js";
-
 import express from "express";
-import { verifyToken, isAdmin } from "../middleware/auth.middleware.js";
-
+import { forwardRequest } from "../utils/proxy";
+import { verifyToken, isAdmin } from "../middleware/auth.middleware";
 export const router = express.Router();
 
-router.get("/", verifyToken, getAllOrdersController);
-router.get("/:id", verifyToken, getOrderByIdController);
-router.post("/", verifyToken, createOrderController);
-router.get("/symbol/:symbol", verifyToken, getOrdersBySymbolController);
-router.put("/:id/status", verifyToken, isAdmin, updateOrderStatusController);
+router.get("/", verifyToken, isAdmin, forwardRequest("order", "getAllOrders"));
+router.get("/:id", verifyToken, forwardRequest("order", "getOrderById"));
+router.post("/", verifyToken, forwardRequest("order", "createOrder"));
+router.get("/symbol/:symbol", verifyToken, forwardRequest("order", "getOrdersBySymbol"));
+router.put("/:id/status", verifyToken, isAdmin, forwardRequest("order", "updateOrderStatus"));

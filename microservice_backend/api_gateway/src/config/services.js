@@ -11,71 +11,75 @@ export const services = {
     market : {
         host : "http://localhost:2003",
         routes : {
-            getStocks : "/stocks",
-            getStock : "/stock/:id",
-            createStock : "/stock",
-            updateStock : "/stock/:id",
-            deleteStock : "/stock/:id"
+            getStocks : "/",
+            getStock : "/:id",
+            createStock : "/",
+            updateStock : "/:id",
+            deleteStock : "/:id"
         }
     },
     order : {
         host : "http://localhost:2004",
         routes : {
-            getAllOrders : "/orders",
-            getOrderById : "/order/:id",
-            getOrdersBySymbol : "/order/symbol/:symbol",
-            createOrder : "/order",
-            updateOrder : "/order/:id",
-            deleteOrder : "/order/:id"
+            getAllOrders : "/",
+            getOrderById : "/:id",
+            getOrdersBySymbol : "/symbol/:symbol",
+            createOrder : "/",
+            updateOrder : "/:id",
+            deleteOrder : "/:id"
         }
     },
     portfolio : {
         host : "http://localhost:2005",
         routes : {
-            getPortfolios : "/portfolios",
-            getPortfolio : "/portfolio/:id",
-            createPortfolio : "/portfolio",
-            updatePortfolio : "/portfolio/:id",
-            deletePortfolio : "/portfolio/:id"
+            getAllPortfolios : "/",
+            getPortfolioById : "/:id",
+            getPortfolioByUserId : "/user/:id",
+            getPortfolioBySymbol : "/symbol/:symbol",
+            createPortfolioEntry : "/",
+            updatePortfolioEntry : "/:id",
+            deletePortfolioEntry : "/:id"
         }
     },
     stock : {
         host : "http://localhost:2006",
         routes : {
-            getStocks : "/stocks",
-            getStock : "/stock/:id",
-            createStock : "/stock",
-            updateStock : "/stock/:id",
-            deleteStock : "/stock/:id"
+            getStocks : "/",
+            getStockBySymbol : "/symbol/:symbol",
+            getStockByPriceRange : "/price/:min/:max",
+            createStock : "/",
+            updateStock : "/:id",
+            deleteStock : "/:id"
         }
     },
     user : {
         host : "http://localhost:2007",
         routes : {
-            getUserByEmail : "/user/email/:email",
-            getAllUsers : "/users",
-            createUser : "/user",
-            updateUser : "/user/:id",
-            updateUserPassword : "/user/:id/password",
-            deleteUser : "/user/:id"
+            getUserByEmail : "/email/:email",
+            getAllUsers : "/",
+            createUser : "/",
+            updateUser : "/:id",
+            updateUserPassword : "/:id/password",
+            deleteUser : "/:id"
         }
     },
     wallet : {
         host : "http://localhost:2008",
         routes : {
-            getWallet : "/wallet/:id",
-            getWallets : "/wallets",
-            createWallet : "/wallet",
-            updateWallet : "/wallet/:id",
-            deleteWallet : "/wallet/:id",
+            getWalletById : "/:id",
+            getWalletByUserId : "/user/:id",
+            getWallets : "/",
+            createWallet : "/",
+            updateWallet : "/:id",
+            deleteWallet : "/:id",
             createdeposit : "/deposit/:id",
             confirmdeposit : "/deposit/confirm/:transactionId",
-            createTransaction : "/transaction",
-            getTransactions : "/transactions",
-            getTransactionById : "/transaction/:id",
-            getTransactionsByTransactionId : "/transaction/transaction/:transactionId",
-            updateTransaction : "/transaction/:id",
-            deleteTransaction : "/transaction/:id"
+            createTransaction : "/",
+            getTransactions : "/",
+            getTransactionByUserId : "/user/:id",
+            getTransactionsByTransactionId : "/transaction/:transactionId",
+            updateTransaction : "/:id",
+            deleteTransaction : "/:id"
         }
     }    
 }
