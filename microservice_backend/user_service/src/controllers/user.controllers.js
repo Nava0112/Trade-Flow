@@ -7,10 +7,11 @@ import {
     updateUserPassword 
 } from '../models/user.models.js';
 import logger from "../../../shared/logger/index.js";
+import { createWallet } from '../client/wallet.client.js';
 
 export const createUserController = async (req, res) => {
-    const { name, email, password, balance } = req.body;
-    const newUser = { name, email, password, balance };
+    const { name, email, password } = req.body;
+    const newUser = { name, email, password };
     try {
         logger.info({
             requestId: req.requestId,
@@ -23,7 +24,8 @@ export const createUserController = async (req, res) => {
             return  res.status(400).json({ error: "User with this email already exists" });
         }
         const addedUser = await createUser(newUser);
-        res.status(201).json(addedUser);
+        const wallet = await createWallet(addedUser.id, 0);
+        res.status(201).json({ addedUser, wallet });
     }
     catch(error){
         logger.error({
@@ -169,7 +171,7 @@ export const updateUserPasswordController = async (req, res) => {
 
 export const updateUserController = async (req, res) => {
     const id = req.params.id;
-    const { name, email, password, balance } = req.body;
+    const { name, email, password } = req.body;
     try {
         logger.info({
             requestId: req.requestId,
@@ -177,7 +179,7 @@ export const updateUserController = async (req, res) => {
             target: "User Service",
             path: req.originalUrl
         });
-        const updatedUser = await updateUser(id, { name, email, password, balance });
+        const updatedUser = await updateUser(id, { name, email, password });
         if (updatedUser) {
             res.status(200).json(updatedUser);
         } else {

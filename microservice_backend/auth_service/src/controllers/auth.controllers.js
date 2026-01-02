@@ -45,14 +45,14 @@ export const signupController = async (req, res) => {
 
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? process.env.COOKIE_SAME_SITE_PROD : process.env.COOKIE_SAME_SITE_DEV,
       maxAge: 15 * 60 * 1000
     });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? process.env.COOKIE_SAME_SITE_PROD : process.env.COOKIE_SAME_SITE_DEV,
       maxAge: 7 * 24 * 60 * 60 * 1000
     });

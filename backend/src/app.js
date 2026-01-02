@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser";
 import { router as stockRoutes } from "./routes/stock.routes.js";
 import { Welcome } from "./services/userMsg.js";
 import { router as userRoutes } from "./routes/user.routes.js";
-import { router as transactionRoutes } from "./routes/transaction.route.js";
+import { router as transactionRoutes } from "./routes/transaction.routes.js";
 import { router as orderRoutes } from "./routes/order.routes.js";
 import { router as authRoutes } from "./routes/auth.routes.js";
 import { router as walletRoutes } from "./routes/wallet.routes.js";

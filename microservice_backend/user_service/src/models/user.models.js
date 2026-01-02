@@ -20,7 +20,6 @@ export const createBotUser = async (bot) => {
         email: bot.email,
         password: await hashPassword(bot.password),
         role: 'BOT',
-        balance: bot.balance
     };
     const [createdBot] = await db('users').insert(newBot).returning('*');
     return createdBot;
@@ -31,7 +30,6 @@ export const createUser = async (user) => {
         name: user.name,
         email: user.email,
         password: await hashPassword(user.password),
-        balance: user.balance
     };
     const findUser = await getUserByEmail(newUser.email);
     if (findUser) {
@@ -43,19 +41,6 @@ export const createUser = async (user) => {
 
 export const getUserPortfolio = async (user_id) => {
     return await db('portfolios').where({ user_id });
-}
-
-export const getUserWalletBalance = async (id) => {
-    const user = await db('users').where({ id }).first();
-    if (!user) {
-        throw new Error('User not found');
-    }
-    return user.balance;
-}
-
-export const updateUserBalance = async (id, balance) => {
-    const [updatedUser] = await db('users').where({ id }).update({ balance }).returning('*');
-    return updatedUser;
 }
 
 export const deleteUser = async (id) => {

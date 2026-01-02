@@ -26,6 +26,9 @@ export const forwardRequest = (service, routeKey) => {
         }
       });
 
+      if (response.headers['set-cookie']) {
+        res.setHeader('set-cookie', response.headers['set-cookie']);
+      }
       res.status(response.status).json(response.data);
     } catch (err) {
       logger.error({

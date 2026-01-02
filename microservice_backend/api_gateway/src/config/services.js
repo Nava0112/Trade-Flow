@@ -19,7 +19,7 @@ const services = {
         }
     },
     order : {
-        host : "http://localhost:2000",
+        host : "http://localhost:2004",
         routes : {
             getAllOrders : "/",
             getOrderById : "/:id",
@@ -70,11 +70,17 @@ const services = {
             getWalletById : "/:id",
             getWalletByUserId : "/user/:id",
             getWallets : "/",
+            getUserWalletBalance : "/balance/:id",
             createWallet : "/",
             updateWallet : "/:id",
             deleteWallet : "/:id",
             createdeposit : "/deposit/:id",
-            confirmdeposit : "/deposit/confirm/:transactionId",
+            confirmdeposit : "/deposit/confirm/:transactionId"
+        }
+    },  
+    transaction : {
+        host : "http://localhost:2008",
+        routes : {
             createTransaction : "/",
             getTransactions : "/",
             getTransactionByUserId : "/user/:id",
@@ -82,7 +88,7 @@ const services = {
             updateTransaction : "/:id",
             deleteTransaction : "/:id"
         }
-    }    
+    }  
 }
 
 export default services;
