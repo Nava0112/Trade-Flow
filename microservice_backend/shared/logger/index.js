@@ -7,7 +7,7 @@ const logger = winston.createLogger({
     winston.format.errors({ stack: true }),
     winston.format.json()
   ),
-  defaultMeta: { service: "API Gateway" }, 
+  defaultMeta: { service: process.env.SERVICE_NAME || "Microservice" },
   transports: [
     new winston.transports.Console()
   ]

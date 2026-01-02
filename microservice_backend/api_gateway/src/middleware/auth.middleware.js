@@ -4,7 +4,7 @@ export const verifyToken = (req, res, next) => {
   try {
     const token = req.cookies.accessToken;
     if (!token) {
-      return res.status(401).json({ error: "Unauthorized" });
+      return res.status(401).json({ error: "Unauthorized : No token provided" });
     }
 
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
@@ -12,14 +12,14 @@ export const verifyToken = (req, res, next) => {
     req.user = decoded; 
     next();
   } catch (err) {
-    return res.status(401).json({ error: "Unauthorized" });
+    return res.status(401).json({ error: "Unauthorized : Invalid token" });
   }
 };
 
 
 export const isAdmin = (req, res, next) => {
   if (req.user.role !== "admin") {
-    return res.status(403).json({ error: "Forbidden" });
+    return res.status(403).json({ error: "Forbidden : You are not admin" });
   }
   next();
 };
@@ -33,7 +33,7 @@ export const isSelfOrAdmin = (req, res, next) => {
     paramUserId !== loggedInUserId &&
     req.user.role !== "admin"
   ) {
-    return res.status(403).json({ error: "Forbidden" });
+    return res.status(403).json({ error: "Forbidden : You are not authorized to perform this action" });
   }
   next();
 };

@@ -15,7 +15,7 @@ export const signupController = async (req, res) => {
 
     const findUser = await getUserByEmail(email);
 
-    if (findUser) {
+    if (findUser.success) {
       return res.status(400).json({ error: "User with this email already exists" });
     }
 
@@ -25,11 +25,13 @@ export const signupController = async (req, res) => {
       name,
       balance
     };
-    const newUser = await createUser(user);
+    const newUserResult = await createUser(user);
 
-    if (!newUser) {
+    if (!newUserResult.success) {
       return res.status(500).json({ error: "Failed to create user" });
     }
+
+    const newUser = newUserResult.data.data;
 
     const accessToken = jwt.sign({
       id: newUser.id,
@@ -58,9 +60,12 @@ export const signupController = async (req, res) => {
     });
 
     return res.status(201).json({
-      user: newUser,
-      accessToken,
-      refreshToken
+      success: true,
+      data: {
+        user: newUser,
+        accessToken,
+        refreshToken
+      }
     });
   } catch (error) {
     logger.error({
@@ -69,15 +74,15 @@ export const signupController = async (req, res) => {
       error: error.message,
       status: error.response?.status
     });
-    return res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error in auth service in create user controller" });
   }
 };
 
 export const loginController = async (req, res) => {
   const { email, password } = req.body;
   try {
-    const user = await getUserByEmail(email);
-    if (!user) {
+    const userResult = await getUserByEmail(email);
+    if (!userResult.success || !userResult.data?.data) {
       logger.error({
         requestId: req.requestId,
         msg: "Upstream service error",
@@ -86,6 +91,7 @@ export const loginController = async (req, res) => {
       });
       return res.status(401).json({ error: "Invalid email" });
     }
+    const user = userResult.data.data;
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       logger.error({
@@ -122,7 +128,14 @@ export const loginController = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
-    res.status(200).json({ user, accessToken: accessToken, refreshToken: refreshToken });
+    res.status(200).json({
+      success: true,
+      data: {
+        user,
+        accessToken: accessToken,
+        refreshToken: refreshToken
+      }
+    });
   } catch (error) {
     logger.error({
       requestId: req.requestId,
@@ -130,7 +143,7 @@ export const loginController = async (req, res) => {
       error: error.message,
       status: error.response?.status
     });
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Internal server error in auth service in login controller", error });
   }
 };
 
@@ -141,7 +154,7 @@ export const logoutController = async (req, res) => {
   }
   res.clearCookie('accessToken');
   res.clearCookie('refreshToken');
-  res.status(200).json({ message: "Logout successful" });
+  res.status(200).json({ success: true, message: "Logout successful" });
 }
 
 export const refreshTokenController = async (req, res) => {
@@ -185,7 +198,13 @@ export const refreshTokenController = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
-    return res.status(200).json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
+    return res.status(200).json({
+      success: true,
+      data: {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken
+      }
+    });
 
   } catch (error) {
     if (
@@ -195,6 +214,6 @@ export const refreshTokenController = async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    return res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error in auth service in refresh token controller" });
   }
 };
