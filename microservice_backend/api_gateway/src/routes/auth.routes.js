@@ -1,6 +1,6 @@
 import express from "express";
-import { forwardRequest } from "../utils/proxy";
-import { verifyToken } from "../middleware/auth.middleware";
+import { forwardRequest } from "../utils/proxy.js";
+import { verifyToken } from "../middleware/auth.middleware.js";
 export const router = express.Router(); 
 
 router.post("/signup", forwardRequest("auth", "signup"));

@@ -1,17 +1,15 @@
 import express from "express";
 import dotenv from "dotenv";
-import { requestLogger } from "../middleware/logger.middleware.js";
-import { rateLimitMiddleware } from "../middleware/rateLimit.middleware.js";
-import { requestContext } from "../../shared/logger/requestContext.js";
-
+import { requestContext } from "../../shared/logger/requestContext.js"
+import { router as authRouter } from "./routes/auth.routes.js";
+import { requestLogger } from "./middleware/logger.middleware.js";
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT;
 app.use(express.json());
-app.use(rateLimitMiddleware);
 app.use(requestContext);
 app.use(requestLogger);
-
+app.use("/auth", authRouter);
 
 
 app.listen(PORT, () => {

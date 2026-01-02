@@ -1,4 +1,4 @@
-export const services = {
+const services = {
     auth : {
         host : "http://localhost:2002",
         routes : {
@@ -26,6 +26,7 @@ export const services = {
             getOrdersBySymbol : "/symbol/:symbol",
             createOrder : "/",
             updateOrder : "/:id",
+            updateOrderStatus : "/status/:id",
             deleteOrder : "/:id"
         }
     },
@@ -69,11 +70,17 @@ export const services = {
             getWalletById : "/:id",
             getWalletByUserId : "/user/:id",
             getWallets : "/",
+            getUserWalletBalance : "/balance/:id",
             createWallet : "/",
             updateWallet : "/:id",
             deleteWallet : "/:id",
             createdeposit : "/deposit/:id",
-            confirmdeposit : "/deposit/confirm/:transactionId",
+            confirmdeposit : "/deposit/confirm/:transactionId"
+        }
+    },  
+    transaction : {
+        host : "http://localhost:2008",
+        routes : {
             createTransaction : "/",
             getTransactions : "/",
             getTransactionByUserId : "/user/:id",
@@ -81,5 +88,7 @@ export const services = {
             updateTransaction : "/:id",
             deleteTransaction : "/:id"
         }
-    }    
+    }  
 }
+
+export default services;
