@@ -12,19 +12,31 @@ const userClient = axios.create({
 export const createUser = async (user) => {
     try {
         const response = await userClient.post("/users", user);
-        return response.data;
+        return {
+            success: true,
+            data: response.data
+        };
     } catch (error) {
         console.error("Error creating user:", error);
-        throw error;
+        return {
+            success: false,
+            error: error.message
+        };
     }
 };
 
 export const getUserByEmail = async (email) => {
     try {
         const response = await userClient.get(`/users/email/${email}`);
-        return response.data;
+        return {
+            success: true,
+            data: response.data
+        };
     } catch (error) {
         console.error("Error getting user by email:", error);
-        throw error;
+        return {
+            success: false,
+            error: error.message
+        };
     }
 };

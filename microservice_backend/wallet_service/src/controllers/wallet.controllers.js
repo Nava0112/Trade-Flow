@@ -1,6 +1,7 @@
 import { confirmDeposit, createDeposit } from '../services/wallet.services.js';
-import { getUserWalletBalance, getUserById } from '../client/user.client.js';
+import { getUserById } from '../client/user.client.js';
 import logger from '../../../shared/logger/index.js';
+import { getUserWalletBalance, createWallet, updateWalletBalance, deleteWallet, getWalletById } from '../models/wallet.models.js';
 
 export const createDepositController = async (req, res) => {
     try {
@@ -10,7 +11,7 @@ export const createDepositController = async (req, res) => {
             target: "Wallet Service",
             path: req.originalUrl
         });
-        const { user_id, amount }   = req.body;
+        const { user_id, amount } = req.body;
         if (!user_id || !amount) {
             return res.status(400).json({ error: 'user_id and amount are required' });
         }
@@ -76,7 +77,7 @@ export const confirmDepositController = async (req, res) => {
 
 
 export const getUserWalletBalanceController = async (req, res, next) => {
-    try {   
+    try {
         logger.info({
             requestId: req.requestId,
             msg: "Forwarding request",
@@ -85,7 +86,7 @@ export const getUserWalletBalanceController = async (req, res, next) => {
         });
         const { id } = req.params;
         const balance = await getUserWalletBalance(id);
-        res.status(200).json({ balance });
+        res.status(200).json({ success: true, data: { balance } });
     } catch (err) {
         logger.error({
             requestId: req.requestId,
@@ -94,7 +95,7 @@ export const getUserWalletBalanceController = async (req, res, next) => {
             path: req.originalUrl,
             error: err.message
         });
-        throw err;
+        res.status(500).json({ success: false, error: err.message });
     }
 };
 
@@ -109,7 +110,7 @@ export const updateWalletBalanceController = async (req, res, next) => {
         const { id } = req.params;
         const { balance } = req.body;
         const updatedWallet = await updateWalletBalance(id, balance);
-        res.status(200).json({ updatedWallet });
+        res.status(200).json({ success: true, data: updatedWallet });
     } catch (err) {
         logger.error({
             requestId: req.requestId,
@@ -118,7 +119,7 @@ export const updateWalletBalanceController = async (req, res, next) => {
             path: req.originalUrl,
             error: err.message
         });
-            throw err;
+        res.status(500).json({ success: false, error: err.message });
     }
 };
 
@@ -133,7 +134,7 @@ export const updateWalletController = async (req, res, next) => {
         const { id } = req.params;
         const { balance } = req.body;
         const updatedWallet = await updateWalletBalance(id, balance);
-        res.status(200).json({ updatedWallet });
+        res.status(200).json({ success: true, data: updatedWallet });
     } catch (err) {
         logger.error({
             requestId: req.requestId,
@@ -142,7 +143,7 @@ export const updateWalletController = async (req, res, next) => {
             path: req.originalUrl,
             error: err.message
         });
-        throw err;
+        res.status(500).json({ success: false, error: err.message });
     }
 };
 
@@ -156,7 +157,7 @@ export const deleteWalletController = async (req, res, next) => {
         });
         const { id } = req.params;
         const deletedWallet = await deleteWallet(id);
-        res.status(200).json({ deletedWallet });
+        res.status(200).json({ success: true, data: deletedWallet });
     } catch (err) {
         logger.error({
             requestId: req.requestId,
@@ -165,7 +166,7 @@ export const deleteWalletController = async (req, res, next) => {
             path: req.originalUrl,
             error: err.message
         });
-        throw err;
+        res.status(500).json({ success: false, error: err.message });
     }
 };
 
@@ -179,7 +180,7 @@ export const getWalletByIdController = async (req, res, next) => {
         });
         const { id } = req.params;
         const wallet = await getWalletById(id);
-        res.status(200).json({ wallet });
+        res.status(200).json({ success: true, data: wallet });
     } catch (err) {
         logger.error({
             requestId: req.requestId,
@@ -188,7 +189,7 @@ export const getWalletByIdController = async (req, res, next) => {
             path: req.originalUrl,
             error: err.message
         });
-        throw err;
+        res.status(500).json({ success: false, error: err.message });
     }
 };
 
@@ -202,7 +203,7 @@ export const getWalletByUserIdController = async (req, res, next) => {
         });
         const { id } = req.params;
         const wallet = await getWalletByUserId(id);
-        res.status(200).json({ wallet });
+        res.status(200).json({ success: true, data: wallet });
     } catch (err) {
         logger.error({
             requestId: req.requestId,
@@ -211,7 +212,7 @@ export const getWalletByUserIdController = async (req, res, next) => {
             path: req.originalUrl,
             error: err.message
         });
-        throw err;
+        res.status(500).json({ success: false, error: err.message });
     }
 };
 
@@ -224,7 +225,7 @@ export const getWalletsController = async (req, res, next) => {
             path: req.originalUrl
         });
         const wallets = await getWallets();
-        res.status(200).json({ wallets });
+        res.status(200).json({ success: true, data: wallets });
     } catch (err) {
         logger.error({
             requestId: req.requestId,
@@ -233,7 +234,7 @@ export const getWalletsController = async (req, res, next) => {
             path: req.originalUrl,
             error: err.message
         });
-        throw err;
+        res.status(500).json({ success: false, error: err.message });
     }
 };
 
@@ -247,7 +248,7 @@ export const createWalletController = async (req, res, next) => {
         });
         const { id } = req.params;
         const wallet = await createWallet(id);
-        res.status(200).json({ wallet });
+        res.status(200).json({ success: true, data: wallet });
     } catch (err) {
         logger.error({
             requestId: req.requestId,
@@ -256,6 +257,6 @@ export const createWalletController = async (req, res, next) => {
             path: req.originalUrl,
             error: err.message
         });
-        throw err;
+        res.status(500).json({ success: false, error: err.message });
     }
 };

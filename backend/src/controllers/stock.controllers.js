@@ -18,7 +18,7 @@ export const createStockController = async (req, res) => {
         res.status(201).json(addedStock);
     } catch (error) {
         console.error("Error adding stock:", error);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({ error: "Internal server error in stock service" });
     }
 };
 
@@ -32,7 +32,7 @@ export const getAllStocksController = async (req, res) => {
         });
     } catch (error) {
         console.error("Error fetching stocks:", error);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({ error: "Internal server error in stock service" });
     }
 
     
@@ -47,7 +47,7 @@ export const getAllStocksController = async (req, res) => {
         }
     } catch (error) {
         console.error("Error fetching stock by symbol:", error);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({ error: "Internal server error in stock service" });
     }
 };
 
@@ -62,7 +62,7 @@ export const deleteStockBySymbolController = async (req, res) => {
         }
     } catch (error) {
         console.error("Error deleting stock:", error);
-        res.status(500).json({ error: "Cascade delete error" });
+        res.status(500).json({ error: "Internal server error in stock service" });
     }
 };
 
@@ -81,7 +81,7 @@ export const updateStockPriceController = async (req, res) => {
         }
     } catch (error) {
         console.error("Error updating stock price:", error);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({ error: "Internal server error in stock service" });
     }
 };
 
@@ -99,6 +99,6 @@ export const getStocksByPriceRangeController = async (req, res) => {
         res.status(200).json(stocks);
     } catch (error) {
         console.error("Error fetching stocks by price range:", error);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({ error: "Internal server error in stock service" });
     }
 };

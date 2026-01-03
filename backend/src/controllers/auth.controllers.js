@@ -43,7 +43,7 @@ export const signupController = async (req, res) => {
         res.status(201).json({ user: newUser, accessToken : accessToken, refreshToken : refreshToken });
     } catch (error) {
         console.error("Error during signup:", error);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({ error: "Internal server error in auth service" });
     }
 };
 
@@ -91,7 +91,7 @@ export const loginController = async (req, res) => {
         res.status(200).json({ user, accessToken : accessToken, refreshToken : refreshToken });
     } catch (error) {
         console.error("Error during login:", error);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({ error: "Internal server error in auth service" });
     }
 };
 
@@ -169,6 +169,6 @@ export const refreshTokenController = async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    return res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error in auth service" });
   }
 };

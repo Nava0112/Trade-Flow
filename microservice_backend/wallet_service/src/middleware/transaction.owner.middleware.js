@@ -13,7 +13,7 @@ export const isTransactionOwnerOrAdmin = async (req, res, next) => {
     String(ownerId) !== String(req.user.id) &&
     req.user.role !== "admin"
   ) {
-    return res.status(403).json({ error: "Forbidden" });
+    return res.status(403).json({ error: "Forbidden : You are not admin or owner of this transaction" });
   }
 
   next();
