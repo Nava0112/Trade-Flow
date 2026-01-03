@@ -44,10 +44,10 @@ export const getUserPortfolio = async (user_id) => {
 }
 
 export const deleteUser = async (id) => {
-    const existingPortfolios = await db('portfolios').where({ user_id: id });
-    if (existingPortfolios.length > 0) {
-        await db('portfolios').where({ user_id: id }).del();
-    }
+    // const existingPortfolios = await db('portfolios').where({ user_id: id });
+    // if (existingPortfolios.length > 0) {
+    //     await db('portfolios').where({ user_id: id }).del();
+    // }
     return await db('users').where({ id }).del();
 }
 

@@ -179,7 +179,7 @@ export const deleteUserController = async (req, res) => {
         });
         res.status(500).json({
             success: false,
-            error: "Internal server error in user service in delete user controller"
+            error: "Internal server error in user service in delete user controller" + error.message
         });
     }
 }
