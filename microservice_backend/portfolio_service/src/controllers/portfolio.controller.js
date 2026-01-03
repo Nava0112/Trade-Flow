@@ -1,5 +1,5 @@
-import { updatePortfolioForBuyService, updatePortfolioForSellService } from "../services/portfolio.services.js";
-import { getPortfoliosByUserId, getPortfolioByUserIdAndSymbol, createPortfolioEntry, applyBuyToPortfolio, applySellToPortfolio, lockStockQuantity, unlockStockQuantity, getPortfolioById, deletePortfolio, getPortfolios, getPortfolioBySymbol } from "../models/portfolio.models";
+import { updatePortfolioForBuyService, updatePortfolioForSellService, lockStockQuantity, unlockStockQuantity } from "../services/portfolio.services.js";
+import { getPortfoliosByUserId, getPortfolioByUserIdAndSymbol, createPortfolioEntry, applyBuyToPortfolio, applySellToPortfolio, getPortfolioById, deletePortfolio, getPortfolios, getPortfolioBySymbol } from "../models/portfolio.models.js";
 
 export const updatePortfolioForBuyController = async (req, res) => {
     try {

@@ -8,9 +8,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.get("/", (req, res) => {
-    res.send("portfolio Service");
-})
+import { router as portfolioRoutes } from "./routes/portfolio.routes.js";
+
+app.use('/portfolios', portfolioRoutes);
+
+app.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok", service: "portfolio_service" });
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

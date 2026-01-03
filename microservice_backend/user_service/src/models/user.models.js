@@ -1,5 +1,6 @@
 import db from '../db/knex.js';
 import bcrypt from 'bcrypt';
+import { deletePortfolio } from '../client/portfolio.client.js';
 
 export const getUsers = async () => {
     return await db('users').select('*');
@@ -44,10 +45,10 @@ export const getUserPortfolio = async (user_id) => {
 }
 
 export const deleteUser = async (id) => {
-    // const existingPortfolios = await db('portfolios').where({ user_id: id });
-    // if (existingPortfolios.length > 0) {
-    //     await db('portfolios').where({ user_id: id }).del();
-    // }
+    const existingPortfolios = await getUserPortfolio(id);
+    if (existingPortfolios.length > 0) {
+        await portfolioClient.deletePortfolio(id);
+    }
     return await db('users').where({ id }).del();
 }
 

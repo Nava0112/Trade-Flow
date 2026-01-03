@@ -1,12 +1,12 @@
-import { 
-    getOrders, 
-    getOrderById, 
-    getOrdersBySymbol, 
-    createOrder, 
-    updateOrderStatus 
+import {
+    getOrders,
+    getOrderById,
+    getOrdersBySymbol,
+    createOrder,
+    updateOrderStatus
 } from "../models/order.models.js";
-import { getUserById } from "../models/user.models.js";
-import { getStockBySymbol } from "../models/stock.models.js";
+import { getUserById } from "../client/user.client.js";
+import { getStockBySymbol } from "../client/stock.client.js";
 import { createBuyOrderService, createSellOrderService } from "../services/order.services.js";
 
 export const createOrderController = async (req, res) => {
@@ -79,11 +79,11 @@ export const getOrderByIdController = async (req, res) => {
         const order = await getOrderById(id);
         if (!order) {
             return res.status(404).json({ error: "Order not found" });
-        } 
+        }
         res.status(200).json(order);
     } catch (error) {
         res.status(500).json({ error: error.message });
-    }   
+    }
 };
 
 export const updateOrderStatusController = async (req, res) => {

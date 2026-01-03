@@ -1,15 +1,17 @@
 import db from "../db/knex.js";
-import { getStocks } from "../models/stock.models.js";
+import { getStocks } from "../client/stock.client.js";
 import {
     createBuyOrderService,
     createSellOrderService
-} from "../services/order.services.js";
+} from "../client/order.client.js";
 import {
     updateUserBalance,
     getUserWalletBalance,
+} from "../client/wallet.client.js";
+import {
     hashPassword,
     createBotUser
-} from "../models/user.models.js";
+} from "../client/user.client.js";
 
 let BOT_USER_ID = null;
 
