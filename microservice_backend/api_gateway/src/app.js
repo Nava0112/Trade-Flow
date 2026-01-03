@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
 import { requestLogger } from "./middleware/logger.middleware.js";
 import { rateLimitMiddleware } from "./middleware/rateLimit.middleware.js";
 import { requestContext } from "../../shared/logger/requestContext.js";
@@ -15,6 +16,7 @@ const app = express();
 const PORT = process.env.PORT;
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(rateLimitMiddleware);
 app.use(requestContext);
 app.use(requestLogger);
