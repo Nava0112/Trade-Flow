@@ -4,6 +4,18 @@ export const getPortfolios = async () => {
     return await db('portfolios').select('*');
 };
 
+export const getPortfolioById = async (id) => {
+    return await db('portfolios').where({ id }).first();
+};
+
+export const getPortfoliosByUserId = async (user_id) => {
+    return await db('portfolios').where({ user_id });
+};
+
+export const getPortfolioBySymbol = async (symbol) => {
+    return await db('portfolios').where({ symbol });
+};
+
 export const getPortfolioByUserIdAndSymbol = async (user_id, symbol) => {
     return await db('portfolios').where({ user_id, symbol }).first();
 }

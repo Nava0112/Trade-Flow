@@ -1,5 +1,5 @@
 import { removeOrderFromBook } from "./orderBook.js";
-import { applyBuyToPortfolio } from "../models/portfolio.models.js";
+import { applyBuyToPortfolio } from "./portfolio.helpers.js";
 
 export const executeTrade = async (buyOrder, sellOrder, trx) => {
     const remainingBuy = Number(buyOrder.quantity) - Number(buyOrder.filled_quantity);
@@ -41,21 +41,22 @@ export const executeTrade = async (buyOrder, sellOrder, trx) => {
     sellOrder.filled_quantity = Number(sellOrder.filled_quantity) + tradeQty;
 
     // 4. Asset Transfer
-    // Buyer pays money (release lock, reduce balance)
-    await trx("users")
-        .where({ id: buyOrder.user_id })
+    // Buyer pays money (release lock, reduce balance - from WALLETS table)
+    await trx("wallets")
+        .where({ user_id: buyOrder.user_id })
         .decrement("locked_balance", tradeQty * tradePrice)
         .increment("balance", -tradeQty * tradePrice);
 
-    // Seller gets money
-    await trx("users")
-        .where({ id: sellOrder.user_id })
+    // Seller gets money (to WALLETS table)
+    await trx("wallets")
+        .where({ user_id: sellOrder.user_id })
         .increment("balance", tradeQty * tradePrice);
 
-    // Buyer gets Stock (FIXED: Previously Missing)
+    // Buyer gets Stock
     await applyBuyToPortfolio(buyOrder.user_id, buyOrder.symbol, tradeQty, tradePrice, trx);
 
     // Seller gives Stock (release lock, reduce quantity)
+    // Note: This assumes locked_quantity is on portfolios table, which seems correct per portfolio models
     await trx("portfolios")
         .where({ user_id: sellOrder.user_id, symbol: sellOrder.symbol })
         .decrement("locked_quantity", tradeQty)

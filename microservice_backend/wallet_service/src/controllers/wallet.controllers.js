@@ -1,7 +1,37 @@
 import { confirmDeposit, createDeposit } from '../services/wallet.services.js';
 import { getUserById } from '../client/user.client.js';
 import logger from '../../../shared/logger/index.js';
-import { getUserWalletBalance, createWallet, updateWalletBalance, deleteWallet, getWalletById } from '../models/wallet.models.js';
+import {
+  getWalletById,
+  getWalletByUserId,
+  getWallets,
+  createWallet,
+  updateWallet,
+  deleteWallet,
+  updateWalletBalance,
+  lockVerify,
+  unlockVerify
+} from '../models/wallet.models.js';
+
+export const lockBalanceController = async (req, res) => {
+    try {
+        const { user_id, amount } = req.body;
+        const result = await lockVerify(user_id, amount);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const unlockBalanceController = async (req, res) => {
+    try {
+        const { user_id, amount } = req.body;
+        const result = await unlockVerify(user_id, amount);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 
 export const createDepositController = async (req, res) => {
     try {

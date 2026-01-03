@@ -3,7 +3,7 @@ import { applyBuyToPortfolio, createPortfolioEntry, getPortfolioByUserIdAndSymbo
 export const updatePortfolioForBuyService = async (userId, symbol, quantity, pricePerUnit) => {
     const qty = Number(quantity);
     const price = Number(pricePerUnit);
-    let portfolio = getPortfolioByUserIdAndSymbol(userId, symbol);
+    let portfolio = await getPortfolioByUserIdAndSymbol(userId, symbol);
     if (!portfolio) {
         portfolio = await createPortfolioEntry({
             user_id: userId,

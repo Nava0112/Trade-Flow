@@ -1,8 +1,7 @@
 import db from "../db/knex.js";
-import { lockUserBalance } from "./wallet.services.js";
-import { lockStockQuantity } from "./portfolio.services.js";
-import { addBuyOrderToBook, addSellOrderToBook } from "../market/orderBook.js";
-import { triggerMatchingEngine } from "../market/market.trigger.js";
+import { lockUserBalance } from "../client/wallet.client.js";
+import { lockStockQuantity } from "../client/portfolio.client.js";
+import { addBuyOrderToBook, addSellOrderToBook, triggerMatchingEngine } from "../client/market.client.js";
 
 export const createBuyOrderService = async ({ user_id, symbol, quantity, price }) => {
     const qty = Number(quantity);
@@ -22,7 +21,7 @@ export const createBuyOrderService = async ({ user_id, symbol, quantity, price }
             })
             .returning("*");
 
-        await lockUserBalance(user_id, totalCost, trx);
+        await lockUserBalance(user_id, totalCost);
         return inserted;
     });
 
@@ -48,7 +47,7 @@ export const createSellOrderService = async ({ user_id, symbol, quantity, price 
             })
             .returning("*");
 
-        await lockStockQuantity(user_id, symbol, qty, trx);
+        await lockStockQuantity(user_id, symbol, qty);
         return inserted;
     });
 
