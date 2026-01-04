@@ -6,7 +6,7 @@ export const router = express.Router();
 router.post("/signup", forwardRequest("auth", "signup"));
 router.post("/login", forwardRequest("auth", "login"));
 router.post("/logout", verifyToken, forwardRequest("auth", "logout"));
-router.post("/refresh-token", forwardRequest("auth", "refresh-token"));
+router.post("/refresh-token", forwardRequest("auth", "refreshToken"));
 
 router.get("/", verifyToken, forwardRequest("auth", ""));
 router.get("/signup", verifyToken, forwardRequest("auth", "signup"));

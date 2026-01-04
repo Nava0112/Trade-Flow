@@ -1,3 +1,4 @@
+import db from '../db/knex.js';
 import { applyBuyToPortfolio, createPortfolioEntry, getPortfolioByUserIdAndSymbol, applySellToPortfolio } from "../models/portfolio.models.js";
 
 export const updatePortfolioForBuyService = async (userId, symbol, quantity, pricePerUnit) => {
@@ -26,9 +27,20 @@ export const updatePortfolioForSellService = async (userId, symbol, quantity) =>
     return await applySellToPortfolio(userId, symbol, qty);
 };
 
-
 export const lockStockQuantity = async (userId, symbol, quantity, trx) => {
     const qty = Number(quantity);
+    const queryBuilder = trx || db;
+
+    if (trx) {
+        return await _lockLogic(trx, userId, symbol, qty);
+    } else {
+        return await db.transaction(async (newTrx) => {
+            return await _lockLogic(newTrx, userId, symbol, qty);
+        });
+    }
+};
+
+const _lockLogic = async (trx, userId, symbol, qty) => {
     const portfolio = await trx("portfolios")
         .where({ user_id: userId, symbol })
         .forUpdate()
@@ -36,28 +48,35 @@ export const lockStockQuantity = async (userId, symbol, quantity, trx) => {
 
     if (!portfolio) throw new Error("Stock not owned");
 
-    const available = Number(portfolio.quantity) - Number(portfolio.locked_quantity);
+    const available = Number(portfolio.quantity) - Number(portfolio.locked_quantity || 0);
     if (available < qty) throw new Error("Insufficient stock");
 
-    await trx("portfolios")
+    const [updated] = await trx("portfolios")
         .where({ id: portfolio.id })
         .update({
-            locked_quantity: trx.raw("locked_quantity + ?", [qty]),
+            locked_quantity: trx.raw("COALESCE(locked_quantity, 0) + ?", [qty]),
             updated_at: trx.fn.now()
-        });
-};
+        })
+        .returning("*");
+
+    return updated;
+}
 
 export const unlockStockQuantity = async (userId, symbol, quantity, trx) => {
     const qty = Number(quantity);
-    // Single atomic update: decrement locked_quantity and set updated_at
-    const affected = await trx("portfolios")
+    const queryBuilder = trx || db;
+
+    const [updated] = await queryBuilder("portfolios")
         .where({ user_id: userId, symbol })
         .andWhere("locked_quantity", ">=", qty)
         .update({
-            locked_quantity: trx.raw("locked_quantity - ?", [qty]),
-            updated_at: trx.fn.now()
-        });
-    if (!affected) {
+            locked_quantity: queryBuilder.raw("GREATEST(0, COALESCE(locked_quantity, 0) - ?)", [qty]),
+            updated_at: queryBuilder.fn.now()
+        })
+        .returning("*");
+
+    if (!updated) {
         throw new Error("Unlock stock failed: portfolio not found or insufficient locked quantity");
     }
+    return updated;
 };

@@ -73,8 +73,9 @@ export const applyBuyToPortfolio = async (user_id, symbol, buy_qty, buy_price, t
     return updated;
 };
 
-export const applySellToPortfolio = async (user_id, symbol, sell_qty) => {
-    const existing = await db('portfolios').where({ user_id, symbol }).first();
+export const applySellToPortfolio = async (user_id, symbol, sell_qty, trx) => {
+    const queryBuilder = trx || db;
+    const existing = await queryBuilder('portfolios').where({ user_id, symbol }).first();
 
     if (!existing) {
         throw new Error('No portfolio entry to sell from');
@@ -87,15 +88,15 @@ export const applySellToPortfolio = async (user_id, symbol, sell_qty) => {
     const remainingQty = existing.quantity - sell_qty;
 
     if (remainingQty === 0) {
-        await db('portfolios').where({ user_id, symbol }).del();
+        await queryBuilder('portfolios').where({ user_id, symbol }).del();
         return null;
     }
 
-    const [updated] = await db('portfolios')
+    const [updated] = await queryBuilder('portfolios')
         .where({ user_id, symbol })
         .update({
             quantity: remainingQty,
-            updated_at: db.fn.now()
+            updated_at: (trx || db).fn.now()
         })
         .returning('*');
 

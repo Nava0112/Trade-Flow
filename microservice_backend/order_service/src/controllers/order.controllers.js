@@ -1,3 +1,7 @@
+// Removed direct model imports. Using clients in service layer or controller if needed.
+// IMPORTANT: The controller logic below ALREADY uses createBuyOrderService which uses clients.
+// The issue was checking user/stock existence using local models.
+// Let's replace the local model imports with client imports.
 import {
     getOrders,
     getOrderById,

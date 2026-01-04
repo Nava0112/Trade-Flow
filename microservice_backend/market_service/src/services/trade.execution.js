@@ -8,7 +8,6 @@ export const executeTrade = async (buyOrder, sellOrder, trx) => {
     const tradeQty = Number(Math.min(remainingBuy, remainingSell));
     const tradePrice = Number(sellOrder.price);
 
-    // 1. Record Trade
     await trx("trades").insert({
         symbol: buyOrder.symbol,
         buy_order_id: buyOrder.id,
@@ -17,8 +16,6 @@ export const executeTrade = async (buyOrder, sellOrder, trx) => {
         quantity: tradeQty
     });
 
-    // 2. Update DB Orders (separate increment and update for safety)
-    // Update BUY order
     await trx("orders").where({ id: buyOrder.id }).increment("filled_quantity", tradeQty);
     await trx("orders")
         .where({ id: buyOrder.id })
@@ -27,7 +24,6 @@ export const executeTrade = async (buyOrder, sellOrder, trx) => {
             filled_at: remainingBuy === tradeQty ? trx.fn.now() : null
         });
 
-    // Update SELL order
     await trx("orders").where({ id: sellOrder.id }).increment("filled_quantity", tradeQty);
     await trx("orders")
         .where({ id: sellOrder.id })
@@ -36,34 +32,25 @@ export const executeTrade = async (buyOrder, sellOrder, trx) => {
             filled_at: remainingSell === tradeQty ? trx.fn.now() : null
         });
 
-    // 3. Update In-Memory Order Objects (Critically Important for Matching Engine Loop)
     buyOrder.filled_quantity = Number(buyOrder.filled_quantity) + tradeQty;
     sellOrder.filled_quantity = Number(sellOrder.filled_quantity) + tradeQty;
 
-    // 4. Asset Transfer
-    // Buyer pays money (release lock, reduce balance - from WALLETS table)
     await trx("wallets")
         .where({ user_id: buyOrder.user_id })
         .decrement("locked_balance", tradeQty * tradePrice)
         .increment("balance", -tradeQty * tradePrice);
 
-    // Seller gets money (to WALLETS table)
     await trx("wallets")
         .where({ user_id: sellOrder.user_id })
         .increment("balance", tradeQty * tradePrice);
 
-    // Buyer gets Stock
     await applyBuyToPortfolio(buyOrder.user_id, buyOrder.symbol, tradeQty, tradePrice, trx);
 
-    // Seller gives Stock (release lock, reduce quantity)
-    // Note: This assumes locked_quantity is on portfolios table, which seems correct per portfolio models
     await trx("portfolios")
         .where({ user_id: sellOrder.user_id, symbol: sellOrder.symbol })
         .decrement("locked_quantity", tradeQty)
         .decrement("quantity", tradeQty);
 
-    // 5. Update Stock Market Data (Price, Volume, High/Low)
-    // We need to fetch current stats first to calculate High/Low
     const stock = await trx("stocks").where({ symbol: buyOrder.symbol }).first();
     if (stock) {
         const newDayHigh = Math.max(stock.day_high, tradePrice);
@@ -80,7 +67,6 @@ export const executeTrade = async (buyOrder, sellOrder, trx) => {
             });
     }
 
-    // 6. Cleanup Memory
     if (remainingBuy === tradeQty) removeOrderFromBook(buyOrder);
     if (remainingSell === tradeQty) removeOrderFromBook(sellOrder);
 

@@ -14,8 +14,8 @@ export const createDeposit = async (userId, amount) => {
     if (!Number.isFinite(currentBalance)) {
         throw new Error('Invalid wallet.balance: must be a finite number');
     }
-    const newBalance = currentBalance + amount;
-    await updateWalletBalance(userId, newBalance);
+    // Do NOT update balance here. Balance is updated in confirmDeposit.
+    // await updateWalletBalance(userId, newBalance);
     return await createTransaction(userId, 'DEPOSIT', amount, 'PENDING', null);
 };
 
@@ -24,17 +24,17 @@ export const lockUserBalance = async (userId, amount, trx) => {
     if (!Number.isFinite(amount) || amount <= 0) {
         throw new Error("Invalid amount: must be a positive number");
     }
-    const wallet = await trx("wallet")
+    const wallet = await trx("wallets")
         .where({ user_id: userId })
         .forUpdate()
         .first();
 
-    if (!wallet) throw new Error("wallet not found");
+    if (!wallet) throw new Error("Wallet not found");
 
     const available = Number(wallet.balance) - Number(wallet.locked_balance);
     if (available < amount) throw new Error("Insufficient balance");
 
-    await trx("wallet")
+    await trx("wallets")
         .where({ user_id: userId })
         .update({
             locked_balance: trx.raw("locked_balance + ?", [amount]),
@@ -47,17 +47,17 @@ export const unlockUserBalance = async (userId, amount, trx) => {
         throw new Error("Invalid amount: must be a positive number");
     }
 
-    const wallet = await trx("wallet")
+    const wallet = await trx("wallets")
         .where({ user_id: userId })
         .forUpdate()
         .first();
 
-    if (!wallet) throw new Error("wallet not found");
+    if (!wallet) throw new Error("Wallet not found");
     if (parseFloat(wallet.locked_balance) < amount) {
         throw new Error("Insufficient locked balance");
     }
 
-    const affected = await trx("wallet")
+    const affected = await trx("wallets")
         .where({ user_id: userId })
         .andWhere("locked_balance", ">=", amount)
         .update({
@@ -82,12 +82,12 @@ export const confirmDeposit = async (transactionId) => {
         if (transaction.type !== 'DEPOSIT') throw new Error('Not a deposit transaction');
         if (transaction.status !== 'PENDING') return transaction;
 
-        const wallet = await trx('wallet')
+        const wallet = await trx('wallets')
             .where({ user_id: transaction.user_id })
             .forUpdate()
             .first();
 
-        if (!wallet) throw new Error('wallet not found');
+        if (!wallet) throw new Error('Wallet not found');
 
         const currentBalance = parseFloat(wallet.balance);
         if (!Number.isFinite(currentBalance)) {
@@ -105,7 +105,7 @@ export const confirmDeposit = async (transactionId) => {
 
         const newBalance = currentBalance + depositAmount;
 
-        await trx('wallet')
+        await trx('wallets')
             .where({ user_id: wallet.user_id })
             .update({ balance: newBalance });
 
