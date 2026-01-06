@@ -9,6 +9,7 @@ import { router as stockRoutes } from "./routes/stock.routes.js";
 import { router as orderRoutes } from "./routes/order.routes.js";
 import { router as userRoutes } from "./routes/user.routes.js";
 import { router as walletRoutes } from "./routes/wallet.routes.js";
+import { router as portfolioRoutes } from "./routes/portfolio.routes.js";
 
 
 dotenv.config();
@@ -25,7 +26,8 @@ app.use("/api/stock", stockRoutes);
 app.use("/api/order", orderRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/api/user", userRoutes);
-app.get("/", (req, res) => {
+app.use("/api/portfolio", portfolioRoutes);
+app.get("/", (req, res) => {    
     res.send("API Gateway");
 });
 

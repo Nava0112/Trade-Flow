@@ -32,7 +32,7 @@ const services = {
     },
     portfolio: {
         host: "http://localhost:2005",
-        mountPoint: "/portfolios",
+        mountPoint: "/portfolio",
         routes: {
             getAllPortfolios: "/",
             getPortfolioById: "/:id",
