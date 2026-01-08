@@ -2,7 +2,8 @@ import db from "../db/knex.js";
 import { getStocks } from "../client/stock.client.js";
 import {
     createBuyOrderService,
-    createSellOrderService
+    createSellOrderService,
+    getOrdersBySymbol
 } from "../client/order.client.js";
 import {
     updateUserBalance,
@@ -10,7 +11,8 @@ import {
 } from "../client/wallet.client.js";
 import {
     hashPassword,
-    createBotUser
+    createBotUser,
+    getUserByEmail
 } from "../client/user.client.js";
 
 let BOT_USER_ID = null;
@@ -53,9 +55,7 @@ export const startMarketBot = async () => {
 };
 
 const ensureBotUser = async () => {
-    const existing = await db("users")
-        .where({ role: "BOT" })
-        .first();
+    const existing = await getUserByEmail("market_bot@localhost");
 
     if (existing) {
         return existing.id;
@@ -109,15 +109,18 @@ const populateOrderBook = async (symbol, price) => {
 };
 
 const countPending = async (symbol, side) => {
-    const res = await db("orders")
-        .where({
-            symbol,
-            order_type: side,
-            status: "PENDING"
-        })
-        .count();
+    // We can use getOrdersBySymbol which returns all orders for a symbol
+    // Then filter by status PENDING and side
+    const orders = await getOrdersBySymbol(symbol);
 
-    return Number(res[0].count);
+    // Filter locally
+    const count = orders.filter(o =>
+        o.symbol === symbol &&
+        o.status === 'PENDING' &&
+        (o.order_type === side || o.side === side)
+    ).length;
+
+    return count;
 };
 
 const generateBuyOrders = async (symbol, price, existing) => {

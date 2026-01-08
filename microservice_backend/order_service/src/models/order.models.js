@@ -6,7 +6,7 @@ export const getOrders = async () => {
 
 export const getOrderById = async (id) => {
     return await db('orders').where({ id }).first();
-}   
+}
 
 export const createOrder = async (order) => {
     const newOrder = {
@@ -22,8 +22,8 @@ export const createOrder = async (order) => {
 }
 
 export const updateOrderStatus = async (id, status) => {
-    const [updatedOrder] = await db('orders').where({ id }).update({ status }).returning('*');
-    return updatedOrder;
+    const [updatedOrderStatus] = await db('orders').where({ id }).update({ status }).returning('*');
+    return updatedOrderStatus;
 }
 
 export const deleteOrder = async (id) => {
@@ -32,8 +32,8 @@ export const deleteOrder = async (id) => {
 
 export const getPendingOrders = async () => {
     return await db('orders').where({ status: 'PENDING' })
-    .groupBy('symbol')
-    .count('id as count');
+        .groupBy('symbol')
+        .count('id as count');
 }
 
 export const getOrdersByUserId = async (user_id) => {
@@ -47,3 +47,18 @@ export const getOrdersBySymbol = async (symbol) => {
 export const getOrdersByUserIdAndSymbol = async (user_id, symbol) => {
     return await db('orders').where({ user_id, symbol });
 };
+
+export const updateOrder = async (id, order) => {
+    const payload = {
+        user_id: order.user_id,
+        symbol: order.symbol,
+        quantity: order.quantity,
+        price: order.price,
+        order_type: order.order_type,
+        status: order.status,
+        filled_quantity: order.filled_quantity,
+        filled_at: order.filled_at
+    };
+    const [updatedOrder] = await db('orders').where({ id }).update(payload).returning('*');
+    return updatedOrder;
+}

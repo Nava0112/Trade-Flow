@@ -1,8 +1,12 @@
 import axios from 'axios';
 
 const userClient = axios.create({
-    baseURL: process.env.USER_SERVICE_URL || 'http://localhost:2007',
-    timeout: 5000
+    baseURL: process.env.USER_SERVICE_URL ? `${process.env.USER_SERVICE_URL}/users` : 'http://localhost:2007/users',
+    timeout: 5000,
+    headers: {
+        'x-user-id': 'market-service-system',
+        'x-user-role': 'admin'
+    }
 });
 
 export const createBotUser = async (botData) => {
@@ -27,3 +31,16 @@ export const hashPassword = async (password) => {
     // StartMarketBot is not running currently, so mock it.
     return "hashed_" + password;
 }
+
+export const getUserByEmail = async (email) => {
+    try {
+        const response = await userClient.get(`/email/${email}`);
+        return response.data;
+    } catch (error) {
+        // If 404, return null? 
+        if (error.response && error.response.status === 404) {
+            return null;
+        }
+        throw new Error(`Failed to get user by email: ${error.message}`);
+    }
+};

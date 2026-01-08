@@ -16,7 +16,7 @@ export const getUserById = async (id) => {
 
 export const createBotUser = async (bot) => {
     const newBot = {
-        id: 0,
+        // id: 0, // Let DB auto-increment
         name: bot.name,
         email: bot.email,
         password: await hashPassword(bot.password),
@@ -47,13 +47,13 @@ export const getUserPortfolio = async (user_id) => {
 export const deleteUser = async (id) => {
     const existingPortfolios = await getUserPortfolio(id);
     if (existingPortfolios.length > 0) {
-        await portfolioClient.deletePortfolio(id);
+        await deletePortfolio(id); 
     }
     return await db('users').where({ id }).del();
 }
 
 export const updateUserPassword = async (id, password) => {
-    password =  await hashPassword(password);
+    password = await hashPassword(password);
     const [updatedUser] = await db('users').where({ id }).update({ password }).returning('*');
     return updatedUser;
 }

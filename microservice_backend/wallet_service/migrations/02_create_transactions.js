@@ -1,7 +1,7 @@
 export async function up(knex) {
   return knex.schema.createTable('transactions', function (table) {
     table.increments('id').primary();
-    table.integer('user_id').unsigned().notNullable().references('id').inTable('wallets').onDelete('CASCADE');
+    table.integer('user_id').unsigned().notNullable().references('id').inTable('users').onDelete('CASCADE');
     table.enum('type', ['DEPOSIT', 'WITHDRAW', 'BUY', 'SELL']).notNullable();
     table.decimal('amount', 15, 2).notNullable();
     table.enum('status', ['PENDING', 'SUCCESS', 'FAILED']).notNullable().defaultTo('PENDING');

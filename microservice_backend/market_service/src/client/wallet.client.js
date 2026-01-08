@@ -1,8 +1,12 @@
 import axios from 'axios';
 
 const walletClient = axios.create({
-    baseURL: process.env.WALLET_SERVICE_URL || 'http://localhost:2008',
-    timeout: 5000
+    baseURL: process.env.WALLET_SERVICE_URL ? `${process.env.WALLET_SERVICE_URL}/wallet` : 'http://localhost:2008/wallet',
+    timeout: 5000,
+    headers: {
+        'x-user-id': 'market-service-system',
+        'x-user-role': 'admin'
+    }
 });
 
 export const getUserWalletBalance = async (user_id) => {
@@ -43,3 +47,36 @@ export const updateUserBalance = async (user_id, amount) => {
         throw new Error(`Failed to update wallet balance: ${error.message}`);
     }
 }
+
+export const lockBalance = async (user_id, amount) => {
+    try {
+        const response = await walletClient.post('/lock-balance', {
+            user_id,
+            amount
+        });
+        return response.data;
+    } catch (error) {
+        throw new Error(`Failed to lock balance: ${error.message}`);
+    }
+};
+
+export const unlockBalance = async (user_id, amount) => {
+    try {
+        const response = await walletClient.post('/unlock-balance', {
+            user_id,
+            amount
+        });
+        return response.data;
+    } catch (error) {
+        throw new Error(`Failed to unlock balance: ${error.message}`);
+    }
+};
+
+export const updateWallet = async (user_id, balance) => {
+    try {
+        const response = await walletClient.put(`/wallet/${user_id}`, { balance });
+        return response.data;
+    } catch (error) {
+        throw new Error(`Failed to update wallet: ${error.message}`);
+    }
+};

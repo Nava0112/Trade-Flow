@@ -2,7 +2,6 @@ import jwt from 'jsonwebtoken';
 
 export const verifyToken = async (req, res, next) => {
     try {
-        // Check if forwarded by API Gateway with user headers
         const userId = req.headers['x-user-id'];
         const userRole = req.headers['x-user-role'];
 
@@ -11,7 +10,6 @@ export const verifyToken = async (req, res, next) => {
             return next();
         }
 
-        // Fallback: verify JWT token
         const token = req.cookies?.accessToken || req.headers.authorization?.split(' ')[1];
 
         if (!token) {

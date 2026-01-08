@@ -20,10 +20,8 @@ router.get('/:id', verifyToken, getPortfolioByIdController);
 router.get('/user/:user_id', verifyToken, getPortfolioByUserIdController);
 router.get('/user/:user_id/symbol/:symbol', verifyToken, getPortfolioByUserIdAndSymbolController);
 router.get('/symbol/:symbol', verifyToken, getPortfolioBySymbolController);
-
 router.post('/buy', verifyToken, updatePortfolioForBuyController);
 router.post('/sell', verifyToken, updatePortfolioForSellController);
 router.post('/lock', verifyToken, lockStockQuantityController);
 router.post('/unlock', verifyToken, unlockStockQuantityController);
-
 router.delete('/user/:user_id/symbol/:symbol', verifyToken, deletePortfolioController);

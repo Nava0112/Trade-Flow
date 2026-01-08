@@ -12,16 +12,12 @@ const getBook = (symbol) => {
 export const addBuyOrderToBook = (order) => {
     const book = getBook(order.symbol);
     book.buy.push(order);
-
-    // Price-time priority (highest buy first)
     book.buy.sort((a, b) => b.price - a.price || a.id - b.id);
 };
 
 export const addSellOrderToBook = (order) => {
     const book = getBook(order.symbol);
     book.sell.push(order);
-
-    // Price-time priority (lowest sell first)
     book.sell.sort((a, b) => a.price - b.price || a.id - b.id);
 };
 

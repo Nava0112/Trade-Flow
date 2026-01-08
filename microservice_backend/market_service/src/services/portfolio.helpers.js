@@ -3,7 +3,6 @@ import db from "../db/knex.js";
 export const applyBuyToPortfolio = async (user_id, symbol, buy_qty, buy_price, trx) => {
     const queryBuilder = trx || db;
 
-    // Lock row if in transaction to prevent race conditions
     const existing = trx
         ? await queryBuilder('portfolios').where({ user_id, symbol }).forUpdate().first()
         : await queryBuilder('portfolios').where({ user_id, symbol }).first();

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const walletClient = axios.create({
     baseURL: process.env.WALLET_SERVICE_URL || 'http://localhost:2008',
-    timeout: 10000  // Longer timeout for financial operations
+    timeout: 10000  
 });
 
 export const lockUserBalance = async (userId, amount) => {

@@ -1,5 +1,8 @@
+import { updateOrder } from "../client/order.client.js";
+import { updateWallet, unlockBalance, getUserWalletBalance } from "../client/wallet.client.js";
+import { updatePortfolioForBuy, updatePortfolioForSell } from "../client/portfolio.client.js";
+import { getStockBySymbol, updateStock } from "../client/stock.client.js";
 import { removeOrderFromBook } from "./orderBook.js";
-import { applyBuyToPortfolio } from "./portfolio.helpers.js";
 
 export const executeTrade = async (buyOrder, sellOrder, trx) => {
     const remainingBuy = Number(buyOrder.quantity) - Number(buyOrder.filled_quantity);
@@ -8,7 +11,7 @@ export const executeTrade = async (buyOrder, sellOrder, trx) => {
     const tradeQty = Number(Math.min(remainingBuy, remainingSell));
     const tradePrice = Number(sellOrder.price);
 
-    // 1. Record Trade
+    // 1. Insert Trade (Local DB)
     await trx("trades").insert({
         symbol: buyOrder.symbol,
         buy_order_id: buyOrder.id,
@@ -17,72 +20,73 @@ export const executeTrade = async (buyOrder, sellOrder, trx) => {
         quantity: tradeQty
     });
 
-    // 2. Update DB Orders (separate increment and update for safety)
-    // Update BUY order
-    await trx("orders").where({ id: buyOrder.id }).increment("filled_quantity", tradeQty);
-    await trx("orders")
-        .where({ id: buyOrder.id })
-        .update({
-            status: remainingBuy === tradeQty ? "FILLED" : "PARTIAL",
-            filled_at: remainingBuy === tradeQty ? trx.fn.now() : null
-        });
+    // 2. Update Orders (Order Service)
+    const newFilledBuy = Number(buyOrder.filled_quantity) + tradeQty;
+    const isBuyFilled = remainingBuy === tradeQty;
 
-    // Update SELL order
-    await trx("orders").where({ id: sellOrder.id }).increment("filled_quantity", tradeQty);
-    await trx("orders")
-        .where({ id: sellOrder.id })
-        .update({
-            status: remainingSell === tradeQty ? "FILLED" : "PARTIAL",
-            filled_at: remainingSell === tradeQty ? trx.fn.now() : null
-        });
+    await updateOrder(buyOrder.id, {
+        ...buyOrder,
+        filled_quantity: newFilledBuy,
+        status: isBuyFilled ? "FILLED" : "PARTIAL",
+        filled_at: isBuyFilled ? new Date().toISOString() : null
+    });
 
-    // 3. Update In-Memory Order Objects (Critically Important for Matching Engine Loop)
-    buyOrder.filled_quantity = Number(buyOrder.filled_quantity) + tradeQty;
-    sellOrder.filled_quantity = Number(sellOrder.filled_quantity) + tradeQty;
+    const newFilledSell = Number(sellOrder.filled_quantity) + tradeQty;
+    const isSellFilled = remainingSell === tradeQty;
 
-    // 4. Asset Transfer
-    // Buyer pays money (release lock, reduce balance - from WALLETS table)
-    await trx("wallets")
-        .where({ user_id: buyOrder.user_id })
-        .decrement("locked_balance", tradeQty * tradePrice)
-        .increment("balance", -tradeQty * tradePrice);
+    await updateOrder(sellOrder.id, {
+        ...sellOrder,
+        filled_quantity: newFilledSell,
+        status: isSellFilled ? "FILLED" : "PARTIAL",
+        filled_at: isSellFilled ? new Date().toISOString() : null
+    });
 
-    // Seller gets money (to WALLETS table)
-    await trx("wallets")
-        .where({ user_id: sellOrder.user_id })
-        .increment("balance", tradeQty * tradePrice);
+    // 3. Update Wallets (Wallet Service)
+    const cost = tradeQty * tradePrice;
 
-    // Buyer gets Stock
-    await applyBuyToPortfolio(buyOrder.user_id, buyOrder.symbol, tradeQty, tradePrice, trx);
+    // Buyer: Unlock 'cost' and Reduce Balance by 'cost'
+    await unlockBalance(buyOrder.user_id, cost); // Decrement locked
 
-    // Seller gives Stock (release lock, reduce quantity)
-    // Note: This assumes locked_quantity is on portfolios table, which seems correct per portfolio models
-    await trx("portfolios")
-        .where({ user_id: sellOrder.user_id, symbol: sellOrder.symbol })
-        .decrement("locked_quantity", tradeQty)
-        .decrement("quantity", tradeQty);
+    // Reduce total balance
+    const buyerBalance = await getUserWalletBalance(buyOrder.user_id);
+    const newBuyerBalance = Number(buyerBalance) - cost;
+    await updateWallet(buyOrder.user_id, newBuyerBalance);
 
-    // 5. Update Stock Market Data (Price, Volume, High/Low)
-    // We need to fetch current stats first to calculate High/Low
-    const stock = await trx("stocks").where({ symbol: buyOrder.symbol }).first();
-    if (stock) {
-        const newDayHigh = Math.max(stock.day_high, tradePrice);
-        const newDayLow = stock.day_low > 0 ? Math.min(stock.day_low, tradePrice) : tradePrice;
+    // Seller: Increase Balance by 'cost'
+    const sellerBalance = await getUserWalletBalance(sellOrder.user_id);
+    const newSellerBalance = Number(sellerBalance) + cost;
+    await updateWallet(sellOrder.user_id, newSellerBalance);
 
-        await trx("stocks")
-            .where({ symbol: buyOrder.symbol })
-            .update({
+    // 4. Update Portfolios (Portfolio Service)
+    await updatePortfolioForBuy(buyOrder.user_id, buyOrder.symbol, tradeQty, tradePrice);
+    await updatePortfolioForSell(sellOrder.user_id, buyOrder.symbol, tradeQty, tradePrice);
+
+    // 5. Update Stock (Stock Service)
+    try {
+        const stock = await getStockBySymbol(buyOrder.symbol);
+        if (stock) {
+            const newDayHigh = Math.max(Number(stock.day_high), tradePrice);
+            const newDayLow = Number(stock.day_low) > 0 ? Math.min(Number(stock.day_low), tradePrice) : tradePrice;
+
+            await updateStock(buyOrder.symbol, {
+                // ...stock, // Be careful replacing all fields, API might expect specific payload
                 price: tradePrice,
-                volume: trx.raw('volume + ?', [tradeQty]),
+                volume: Number(stock.volume) + tradeQty,
                 day_high: newDayHigh,
                 day_low: newDayLow,
-                updated_at: trx.fn.now()
+                updated_at: new Date().toISOString()
             });
+        }
+    } catch (err) {
+        console.error("Failed to update stock stats:", err.message);
+        // Continue execution even if stock stats update fails
     }
 
-    // 6. Cleanup Memory
-    if (remainingBuy === tradeQty) removeOrderFromBook(buyOrder);
-    if (remainingSell === tradeQty) removeOrderFromBook(sellOrder);
+    buyOrder.filled_quantity = newFilledBuy;
+    sellOrder.filled_quantity = newFilledSell;
+
+    if (isBuyFilled) removeOrderFromBook(buyOrder);
+    if (isSellFilled) removeOrderFromBook(sellOrder);
 
     console.log(`Trade Executed: ${tradeQty} ${buyOrder.symbol} @ ${tradePrice}`);
 };
