@@ -27,7 +27,9 @@ const services = {
             getOrderById: "/:id",
             getOrdersBySymbol: "/symbol/:symbol",
             createOrder: "/",
-            updateOrderStatus: "/:id/status"
+            updateOrderStatus: "/:id/status",
+            updateOrder: "/:id",
+            deleteOrder: "/:id"
         }
     },
     portfolio: {

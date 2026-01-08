@@ -1,13 +1,10 @@
-// Removed direct model imports. Using clients in service layer or controller if needed.
-// IMPORTANT: The controller logic below ALREADY uses createBuyOrderService which uses clients.
-// The issue was checking user/stock existence using local models.
-// Let's replace the local model imports with client imports.
 import {
     getOrders,
     getOrderById,
     getOrdersBySymbol,
-    createOrder,
-    updateOrderStatus
+    updateOrderStatus,
+    updateOrder,
+    deleteOrder
 } from "../models/order.models.js";
 import { getUserById } from "../client/user.client.js";
 import { getStockBySymbol } from "../client/stock.client.js";
@@ -109,6 +106,33 @@ export const getOrdersBySymbolController = async (req, res) => {
     try {
         const orders = await getOrdersBySymbol(symbol);
         res.status(200).json(orders);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const updateOrderController = async (req, res) => {
+    const { id } = req.params;
+    const { order } = req.body;
+    try {
+        const updatedOrder = await updateOrder(id, order);
+        if (!updatedOrder) {
+            return res.status(404).json({ error: "Order not found" });
+        }
+        res.status(200).json(updatedOrder);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const deleteOrderController = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const deletedOrder = await deleteOrder(id);
+        if (!deletedOrder) {
+            return res.status(404).json({ error: "Order not found" });
+        }
+        res.status(200).json(deletedOrder);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

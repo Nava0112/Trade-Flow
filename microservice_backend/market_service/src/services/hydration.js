@@ -1,4 +1,4 @@
-import db from "../db/knex.js";
+import { getAllOrders } from "../client/order.client.js";
 import {
     addBuyOrderToBook,
     addSellOrderToBook,
@@ -9,50 +9,37 @@ export const hydrateOrderBook = async () => {
     console.log("Hydrating Order Book...");
 
     try {
-        const BATCH_SIZE = 1000;
-        let offset = 0;
-        let count = 0;
+        const allOrders = await getAllOrders();
+        if(allOrders.length === 0) return;
+        const pendingOrders = allOrders.filter(order => order.status === "PENDING" || order.status === "PARTIAL");
+        pendingOrders.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
-        while (true) {
-            const batch = await db("orders")
-                .where({ status: "PENDING" })
-                .orderBy("created_at", "asc")
-                .limit(BATCH_SIZE)
-                .offset(offset);
+        const count = pendingOrders.length;
+        console.log(`Processing ${count} pending orders`);
 
-            if (batch.length === 0) break;
+        for (const order of pendingOrders) {
+            const side = order.order_type;
+            const price = Number(order.price);
+            const quantity = Number(order.quantity);
+            const filled = Number(order.filled_quantity || 0);
 
-            console.log(`Processing ${batch.length} orders`);
+            if (!Number.isFinite(price) || price <= 0) continue;
+            if (!Number.isFinite(quantity) || quantity <= 0) continue;
+            if (side !== "BUY" && side !== "SELL") continue;
 
-            for (const order of batch) {
-                const side = order.side || order.order_type;
+            const normalizedOrder = {
+                ...order,
+                side,
+                price,
+                quantity,
+                filled_quantity: filled
+            };
 
-                const price = Number(order.price);
-                const quantity = Number(order.quantity);
-                const filled = Number(order.filled_quantity || 0);
-
-                if (!Number.isFinite(price) || price <= 0) continue;
-                if (!Number.isFinite(quantity) || quantity <= 0) continue;
-                if (side !== "BUY" && side !== "SELL") continue;
-
-                const normalizedOrder = {
-                    ...order,
-                    side,
-                    price,
-                    quantity,
-                    filled_quantity: filled
-                };
-
-                if (side === "BUY") {
-                    addBuyOrderToBook(normalizedOrder);
-                } else {
-                    addSellOrderToBook(normalizedOrder);
-                }
-
-                count++;
+            if (side === "BUY") {
+                addBuyOrderToBook(normalizedOrder);
+            } else {
+                addSellOrderToBook(normalizedOrder);
             }
-
-            offset += BATCH_SIZE;
         }
 
         console.log(`Order Book Hydrated: Loaded ${count} pending orders.`);

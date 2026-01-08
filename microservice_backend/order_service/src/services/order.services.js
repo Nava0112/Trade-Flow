@@ -25,7 +25,6 @@ export const createBuyOrderService = async ({ user_id, symbol, quantity, price }
         return inserted;
     });
 
-    // In-memory operations after successful commit
     addBuyOrderToBook(order);
     triggerMatchingEngine(symbol);
     return order;
@@ -51,7 +50,6 @@ export const createSellOrderService = async ({ user_id, symbol, quantity, price 
         return inserted;
     });
 
-    // In-memory operations after successful commit
     addSellOrderToBook(order);
     triggerMatchingEngine(symbol);
     return order;
