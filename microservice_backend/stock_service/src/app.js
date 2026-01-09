@@ -2,8 +2,9 @@ import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import { router as stockRoutes } from "./routes/stock.routes.js";
-import { requestLogger } from "./middleware/logger.middleware.js";
+import { requestLogger } from "../../shared/middleware/logger.middleware.js";
 import { requestContext } from "../../shared/logger/requestContext.js";
+import { errorHandler } from "../../shared/middleware/error.middleware.js";
 
 dotenv.config();
 const app = express();
@@ -15,6 +16,7 @@ app.use(cookieParser());
 app.use(requestContext);
 app.use(requestLogger);
 app.use('/stocks', stockRoutes);
+app.use(errorHandler);
 
 app.get("/health", (req, res) => {
     res.status(200).json({ status: "ok", service: "stock_service" });

@@ -1,6 +1,8 @@
+const env = process.env.NODE_ENV || 'development';
+
 const services = {
     auth: {
-        host: "http://localhost:2002",
+        host: env === 'development' ? "http://localhost:2002" : process.env.AUTH_SERVICE,
         mountPoint: "/auth",
         routes: {
             signup: "/signup",
@@ -10,7 +12,7 @@ const services = {
         }
     },
     market: {
-        host: "http://localhost:2003",
+        host: env === 'development' ? "http://localhost:2003" : process.env.MARKET_SERVICE,
         mountPoint: "/market",
         routes: {
             getOrderBook: "/order-book",
@@ -20,7 +22,7 @@ const services = {
         }
     },
     order: {
-        host: "http://localhost:2004",
+        host: env === 'development' ? "http://localhost:2004" : process.env.ORDER_SERVICE,
         mountPoint: "/orders",
         routes: {
             getAllOrders: "/",
@@ -33,7 +35,7 @@ const services = {
         }
     },
     portfolio: {
-        host: "http://localhost:2005",
+        host: env === 'development' ? "http://localhost:2005" : process.env.PORTFOLIO_SERVICE,
         mountPoint: "/portfolio",
         routes: {
             getAllPortfolios: "/",
@@ -49,7 +51,7 @@ const services = {
         }
     },
     stock: {
-        host: "http://localhost:2006",
+        host: env === 'development' ? "http://localhost:2006" : process.env.STOCK_SERVICE,
         mountPoint: "/stocks",
         routes: {
             getAllStocks: "/",
@@ -62,7 +64,7 @@ const services = {
         }
     },
     user: {
-        host: "http://localhost:2007",
+        host: env === 'development' ? "http://localhost:2007" : process.env.USER_SERVICE,
         mountPoint: "/users",
         routes: {
             getUserByEmail: "/email/:email",
@@ -75,7 +77,7 @@ const services = {
         }
     },
     wallet: {
-        host: "http://localhost:2008",
+        host: env === 'development' ? "http://localhost:2008" : process.env.WALLET_SERVICE,
         mountPoint: "/wallet",
         routes: {
             getWalletById: "/wallet/:id",
@@ -92,7 +94,7 @@ const services = {
         }
     },
     transaction: {
-        host: "http://localhost:2008",
+        host: env === 'development' ? "http://localhost:2008" : process.env.TRANSACTION_SERVICE,
         mountPoint: "/transaction",
         routes: {
             getTransactions: "/",

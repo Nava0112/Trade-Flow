@@ -7,7 +7,7 @@ const stockClient = axios.create({
 
 export const getStockBySymbol = async (symbol) => {
     try {
-        const response = await stockClient.get(`/stocks/${symbol}`);
+        const response = await stockClient.get(`/stocks/symbol/${symbol}`);
         return response.data;
     } catch (error) {
         throw new Error(`Failed to get stock: ${error.message}`);

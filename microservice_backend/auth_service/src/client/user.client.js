@@ -2,7 +2,7 @@ import axios from "axios";
 import dotenv from "dotenv";
 dotenv.config();
 const userClient = axios.create({
-    baseURL: process.env.USER_SERVICE,
+    baseURL: process.env.USER_SERVICE || "http://localhost:2007",
     headers: {
         "Content-Type": "application/json",
     },
