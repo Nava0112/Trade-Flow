@@ -1,10 +1,8 @@
 import express from "express";
 import dotenv from "dotenv";
-import { requestContext } from "../../shared/logger/requestContext.js"
-import { errorHandler } from "../../shared/middleware/error.middleware.js";
-import { router as authRouter } from "./routes/auth.routes.js";
-import { requestLogger } from "../../shared/middleware/logger.middleware.js";
+import { requestContext, errorHandler, requestLogger } from "@trade-flow/shared";
 import cookieparser from "cookie-parser";
+import { router as authRouter } from "./routes/auth.routes.js";
 dotenv.config();
 
 if (!process.env.ACCESS_TOKEN_SECRET || !process.env.REFRESH_TOKEN_SECRET) {

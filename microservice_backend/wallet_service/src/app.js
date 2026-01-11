@@ -3,9 +3,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import { router as walletRoutes } from "./routes/wallet.routes.js";
 import { router as transactionRoutes } from "./routes/transaction.routes.js";
-import { requestContext } from "../../shared/logger/requestContext.js"
-import { errorHandler } from "../../shared/middleware/error.middleware.js";
-import { requestLogger } from "../../shared/middleware/logger.middleware.js";
+import { requestContext, errorHandler, requestLogger } from "@trade-flow/shared";
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 2008;

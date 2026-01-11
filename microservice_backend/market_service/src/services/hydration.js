@@ -10,7 +10,7 @@ export const hydrateOrderBook = async () => {
 
     try {
         const allOrders = await getAllOrders();
-        if(allOrders.length === 0) return;
+        if (allOrders.length === 0) return;
         const pendingOrders = allOrders.filter(order => order.status === "PENDING" || order.status === "PARTIAL");
         pendingOrders.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
@@ -45,7 +45,10 @@ export const hydrateOrderBook = async () => {
         console.log(`Order Book Hydrated: Loaded ${count} pending orders.`);
         console.log(JSON.stringify(getOrderBookSnapshot(), null, 2));
     } catch (error) {
-        console.error("Failed to hydrate order book:", error);
+        console.error("Failed to hydrate order book. Ensure order_service is running:", error.message);
+        // Don't throw logic error, but do throw connection error? 
+        // For now, let's allow startup to proceed with empty book if it's just a connection error? 
+        // No, that's dangerous. Let's just log better.
         throw error;
     }
 };

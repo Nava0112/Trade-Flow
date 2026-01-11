@@ -2,16 +2,14 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-import { requestLogger } from "../../shared/middleware/logger.middleware.js";
-import { rateLimitMiddleware } from "./middleware/rateLimit.middleware.js";
-import { requestContext } from "../../shared/logger/requestContext.js";
-import { errorHandler } from "../../shared/middleware/error.middleware.js";
+import { requestLogger, errorHandler, requestContext } from "@trade-flow/shared";
 import { router as authRoutes } from "./routes/auth.routes.js";
 import { router as stockRoutes } from "./routes/stock.routes.js";
 import { router as orderRoutes } from "./routes/order.routes.js";
 import { router as userRoutes } from "./routes/user.routes.js";
 import { router as walletRoutes } from "./routes/wallet.routes.js";
 import { router as portfolioRoutes } from "./routes/portfolio.routes.js";
+import { rateLimitMiddleware } from "./middleware/rateLimit.middleware.js";
 
 
 dotenv.config();

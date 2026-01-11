@@ -2,9 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import { router as stockRoutes } from "./routes/stock.routes.js";
-import { requestLogger } from "../../shared/middleware/logger.middleware.js";
-import { requestContext } from "../../shared/logger/requestContext.js";
-import { errorHandler } from "../../shared/middleware/error.middleware.js";
+import { requestLogger, requestContext, errorHandler } from "@trade-flow/shared";
 
 dotenv.config();
 const app = express();

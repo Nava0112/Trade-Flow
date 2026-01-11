@@ -7,14 +7,12 @@ const PORT = process.env.PORT || 2003;
 import { router as marketRoutes } from "./routes/market.routes.js";
 import { hydrateOrderBook } from "./services/hydration.js";
 
-import { requestContext } from "../../shared/logger/requestContext.js";
-import { requestLogger } from "../../shared/middleware/logger.middleware.js";
+import { requestContext, requestLogger, errorHandler } from "@trade-flow/shared";
 
 app.use(express.json());
 app.use(requestContext);
 app.use(requestLogger);
 app.use('/market', marketRoutes);
-import { errorHandler } from "../../shared/middleware/error.middleware.js";
 app.use(errorHandler);
 
 app.get("/health", (req, res) => {
