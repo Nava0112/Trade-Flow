@@ -56,7 +56,7 @@ export const createOrderController = async (req, res) => {
             });
         }
 
-        return res.status(201).json(order);
+        return res.status(201).json({ success: true, data: order });
 
     } catch (error) {
         console.error("Create order error:", error.message);
@@ -68,7 +68,7 @@ export const createOrderController = async (req, res) => {
 export const getAllOrdersController = async (req, res) => {
     try {
         const orders = await getOrders();
-        res.status(200).json(orders);
+        res.status(200).json({ success: true, data: orders });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -81,7 +81,7 @@ export const getOrderByIdController = async (req, res) => {
         if (!order) {
             return res.status(404).json({ error: "Order not found" });
         }
-        res.status(200).json(order);
+        res.status(200).json({ success: true, data: order });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -95,7 +95,7 @@ export const updateOrderStatusController = async (req, res) => {
         if (!updatedOrder) {
             return res.status(404).json({ error: "Order not found" });
         }
-        res.status(200).json(updatedOrder);
+        res.status(200).json({ success: true, data: updatedOrder });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -105,7 +105,7 @@ export const getOrdersBySymbolController = async (req, res) => {
     const { symbol } = req.params;
     try {
         const orders = await getOrdersBySymbol(symbol);
-        res.status(200).json(orders);
+        res.status(200).json({ success: true, data: orders });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -119,7 +119,7 @@ export const updateOrderController = async (req, res) => {
         if (!updatedOrder) {
             return res.status(404).json({ error: "Order not found" });
         }
-        res.status(200).json(updatedOrder);
+        res.status(200).json({ success: true, data: updatedOrder });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -132,7 +132,7 @@ export const deleteOrderController = async (req, res) => {
         if (!deletedOrder) {
             return res.status(404).json({ error: "Order not found" });
         }
-        res.status(200).json(deletedOrder);
+        res.status(200).json({ success: true, data: deletedOrder });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

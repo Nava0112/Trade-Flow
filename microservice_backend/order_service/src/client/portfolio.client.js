@@ -7,7 +7,7 @@ const portfolioClient = axios.create({
 
 export const lockStockQuantity = async (userId, symbol, quantity) => {
     try {
-        const response = await portfolioClient.post('/portfolios/lock', {
+        const response = await portfolioClient.post('/portfolio/lock', {
             user_id: userId,
             symbol,
             quantity
@@ -20,7 +20,7 @@ export const lockStockQuantity = async (userId, symbol, quantity) => {
 
 export const unlockStockQuantity = async (userId, symbol, quantity) => {
     try {
-        const response = await portfolioClient.post('/portfolios/unlock', {
+        const response = await portfolioClient.post('/portfolio/unlock', {
             user_id: userId,
             symbol,
             quantity
@@ -33,7 +33,7 @@ export const unlockStockQuantity = async (userId, symbol, quantity) => {
 
 export const updatePortfolioForBuy = async (userId, symbol, quantity, price) => {
     try {
-        const response = await portfolioClient.post('/portfolios/buy', {
+        const response = await portfolioClient.post('/portfolio/buy', {
             user_id: userId,
             symbol,
             quantity,
@@ -47,7 +47,7 @@ export const updatePortfolioForBuy = async (userId, symbol, quantity, price) => 
 
 export const updatePortfolioForSell = async (userId, symbol, quantity) => {
     try {
-        const response = await portfolioClient.post('/portfolios/sell', {
+        const response = await portfolioClient.post('/portfolio/sell', {
             user_id: userId,
             symbol,
             quantity

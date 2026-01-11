@@ -6,7 +6,7 @@ import { getWalletByUserId } from '../models/wallet.models.js';
 //this is done to avoid race conditions
 export const createDeposit = async (userId, amount) => {
     const user = await getUserById(userId);
-    if (!user) throw new Error('User not found');
+    if (!user || !user.success) throw new Error('User not found');
     if (amount <= 0) throw new Error('Deposit amount must be positive');
     const wallet = await getWalletByUserId(userId);
     if (!wallet) throw new Error('Wallet not found');

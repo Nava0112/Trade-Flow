@@ -8,19 +8,20 @@ const marketClient = axios.create({
 export const addBuyOrderToBook = async (order) => {
     try {
         const response = await marketClient.post('/market/order-book/buy', order);
-        return response.data;
+        return { success: true, data: response.data };
     } catch (error) {
         console.error('Failed to add buy order to market:', error.message);
-        // Don't throw - market service failure shouldn't block order creation
+        return { success: false, error: error.message };
     }
 };
 
 export const addSellOrderToBook = async (order) => {
     try {
         const response = await marketClient.post('/market/order-book/sell', order);
-        return response.data;
+        return { success: true, data: response.data };
     } catch (error) {
         console.error('Failed to add sell order to market:', error.message);
+        return { success: false, error: error.message };
     }
 };
 

@@ -54,18 +54,14 @@ export const signupController = async (req, res) => {
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction
-        ? process.env.COOKIE_SAME_SITE_PROD
-        : process.env.COOKIE_SAME_SITE_DEV,
+      sameSite: isProduction ? "strict" : "lax",
       maxAge: 15 * 60 * 1000
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction
-        ? process.env.COOKIE_SAME_SITE_PROD
-        : process.env.COOKIE_SAME_SITE_DEV,
+      sameSite: isProduction ? "strict" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
@@ -128,18 +124,14 @@ export const loginController = async (req, res) => {
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction
-        ? process.env.COOKIE_SAME_SITE_PROD
-        : process.env.COOKIE_SAME_SITE_DEV,
+      sameSite: isProduction ? "strict" : "lax",
       maxAge: 15 * 60 * 1000
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction
-        ? process.env.COOKIE_SAME_SITE_PROD
-        : process.env.COOKIE_SAME_SITE_DEV,
+      sameSite: isProduction ? "strict" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
@@ -162,17 +154,13 @@ export const logoutController = async (req, res) => {
   res.clearCookie("accessToken", {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction
-      ? process.env.COOKIE_SAME_SITE_PROD
-      : process.env.COOKIE_SAME_SITE_DEV
+    sameSite: isProduction ? "strict" : "lax"
   });
 
   res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction
-      ? process.env.COOKIE_SAME_SITE_PROD
-      : process.env.COOKIE_SAME_SITE_DEV
+    sameSite: isProduction ? "strict" : "lax"
   });
 
   return res.status(200).json({

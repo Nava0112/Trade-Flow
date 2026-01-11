@@ -1,7 +1,7 @@
 import db from "../db/knex.js";
 
 export const getWalletByUserId = async (user_id) => {
-    return await db('wallets').where({ user_id });
+    return await db('wallets').where({ user_id }).first();
 }
 
 export const createWallet = async (user_id, balance) => {
