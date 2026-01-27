@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-import { router as orderRoutes } from "./routes/order.routes.js";
+import router from "./routes/order.routes.js";
 import { errorHandler, requestContext, requestLogger } from "@trade-flow/shared";
 
 dotenv.config();
@@ -14,7 +14,7 @@ app.use(cookieParser());
 app.use(requestContext);
 app.use(requestLogger);
 
-app.use('/orders', orderRoutes);
+app.use('/orders', router);
 app.use(errorHandler);
 
 app.get("/health", (req, res) => {

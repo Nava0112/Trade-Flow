@@ -1,34 +1,95 @@
+// middleware/auth.middleware.js
 import jwt from 'jsonwebtoken';
 
-export const verifyToken = async (req, res, next) => {
+export const verifyToken = (req, res, next) => {
     try {
-        // Check if forwarded by API Gateway with user headers
-        const userId = req.headers['x-user-id'];
-        const userRole = req.headers['x-user-role'];
-
-        if (userId && userRole) {
-            req.user = { id: userId, role: userRole };
-            return next();
-        }
-
-        // Fallback: verify JWT token
-        const token = req.cookies?.accessToken || req.headers.authorization?.split(' ')[1];
-
+        const token = req.headers.authorization?.split(' ')[1];
+        
         if (!token) {
-            return res.status(401).json({ error: 'Unauthorized - No token provided' });
+            return res.status(401).json({
+                success: false,
+                error: 'Access token required'
+            });
         }
 
-        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
         req.user = decoded;
         next();
     } catch (error) {
-        res.status(403).json({ error: 'Forbidden - Invalid token' });
+        console.error("Token verification error:", error.message);
+        
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({
+                success: false,
+                error: 'Token expired'
+            });
+        }
+        
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({
+                success: false,
+                error: 'Invalid token'
+            });
+        }
+        
+        return res.status(500).json({
+            success: false,
+            error: 'Authentication failed'
+        });
     }
 };
 
 export const isAdmin = (req, res, next) => {
-    if (!req.user || req.user.role !== 'admin') {
-        return res.status(403).json({ error: 'Forbidden - Admin access required' });
+    try {
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                error: 'Authentication required'
+            });
+        }
+
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                error: 'Admin access required'
+            });
+        }
+
+        next();
+    } catch (error) {
+        console.error("Admin check error:", error.message);
+        return res.status(500).json({
+            success: false,
+            error: 'Authorization failed'
+        });
     }
-    next();
+};
+
+export const isOwnerOrAdmin = (req, res, next) => {
+    try {
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                error: 'Authentication required'
+            });
+        }
+
+        const resourceUserId = parseInt(req.params.userId || req.body.user_id);
+        const currentUserId = parseInt(req.user.id);
+
+        if (req.user.role !== 'admin' && currentUserId !== resourceUserId) {
+            return res.status(403).json({
+                success: false,
+                error: 'Access denied. You can only access your own resources'
+            });
+        }
+
+        next();
+    } catch (error) {
+        console.error("Owner/Admin check error:", error.message);
+        return res.status(500).json({
+            success: false,
+            error: 'Authorization failed'
+        });
+    }
 };
