@@ -1,3 +1,10 @@
+/**
+ * @deprecated This file is NOT imported by any route or controller.
+ * Market integration has been moved into order.controller.js (createOrderController).
+ * The wallet balance locking (lockUserBalance, lockStockQuantity) logic below
+ * is valuable but not yet wired into the controller — consider integrating it
+ * into createOrderController for production use.
+ */
 import db from "../db/knex.js";
 import { lockUserBalance } from "../client/wallet.client.js";
 import { lockStockQuantity } from "../client/portfolio.client.js";
