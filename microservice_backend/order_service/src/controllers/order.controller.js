@@ -12,6 +12,7 @@ import {
 } from "../models/order.models.js";
 import { getUserById } from "../client/user.client.js";
 import { getStockBySymbol } from "../client/stock.client.js";
+import { addBuyOrderToBook, addSellOrderToBook, triggerMatchingEngine } from "../client/market.client.js";
 
 export const createOrderController = async (req, res) => {
     try {
@@ -28,14 +29,14 @@ export const createOrderController = async (req, res) => {
         // Validate data types
         const parsedQuantity = parseInt(quantity);
         const parsedPrice = parseFloat(price);
-        
+
         if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
             return res.status(400).json({
                 success: false,
                 error: "Quantity must be a positive integer"
             });
         }
-        
+
         if (isNaN(parsedPrice) || parsedPrice <= 0) {
             return res.status(400).json({
                 success: false,
@@ -83,6 +84,20 @@ export const createOrderController = async (req, res) => {
         // Save to database
         const order = await createOrder(orderData);
 
+        // Push order to market service order book & trigger matching (fire-and-forget)
+        try {
+            if (order.order_type === 'BUY') {
+                await addBuyOrderToBook(order);
+            } else {
+                await addSellOrderToBook(order);
+            }
+            await triggerMatchingEngine(symbol);
+            console.log(`Order ${order.id} pushed to market service order book`);
+        } catch (marketError) {
+            console.error(`Failed to push order ${order.id} to market service:`, marketError.message);
+            // Don't fail the order creation — market service may be temporarily unavailable
+        }
+
         return res.status(201).json({
             success: true,
             message: "Order created successfully",
@@ -119,7 +134,7 @@ export const getAllOrdersController = async (req, res) => {
 export const getOrderByIdController = async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         if (!id) {
             return res.status(400).json({
                 success: false,
@@ -128,7 +143,7 @@ export const getOrderByIdController = async (req, res) => {
         }
 
         const order = await getOrderById(id);
-        
+
         if (!order) {
             return res.status(404).json({
                 success: false,
@@ -177,7 +192,7 @@ export const updateOrderStatusController = async (req, res) => {
         }
 
         const updatedOrder = await updateOrderStatus(id, status.toUpperCase());
-        
+
         if (!updatedOrder) {
             return res.status(404).json({
                 success: false,
@@ -202,7 +217,7 @@ export const updateOrderStatusController = async (req, res) => {
 export const getOrdersBySymbolController = async (req, res) => {
     try {
         const { symbol } = req.params;
-        
+
         if (!symbol) {
             return res.status(400).json({
                 success: false,
@@ -211,7 +226,7 @@ export const getOrdersBySymbolController = async (req, res) => {
         }
 
         const orders = await getOrdersBySymbol(symbol);
-        
+
         return res.status(200).json({
             success: true,
             symbol,
@@ -264,7 +279,7 @@ export const updateOrderController = async (req, res) => {
         }
 
         const updatedOrder = await updateOrder(id, orderData);
-        
+
         return res.status(200).json({
             success: true,
             message: "Order updated successfully",
@@ -282,7 +297,7 @@ export const updateOrderController = async (req, res) => {
 export const deleteOrderController = async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         if (!id) {
             return res.status(400).json({
                 success: false,
@@ -308,7 +323,7 @@ export const deleteOrderController = async (req, res) => {
         }
 
         const deleted = await deleteOrder(id);
-        
+
         if (!deleted) {
             return res.status(500).json({
                 success: false,
@@ -334,7 +349,7 @@ export const getOrdersByUserIdController = async (req, res) => {
     try {
         const { userId } = req.params;
         const { status, symbol } = req.query;
-        
+
         if (!userId) {
             return res.status(400).json({
                 success: false,
@@ -344,12 +359,12 @@ export const getOrdersByUserIdController = async (req, res) => {
 
         // Get all orders for user
         let orders = await getOrdersByUserId(userId);
-        
+
         // Apply filters if provided
         if (status) {
             orders = orders.filter(order => order.status === status.toUpperCase());
         }
-        
+
         if (symbol) {
             orders = orders.filter(order => order.symbol === symbol.toUpperCase());
         }
@@ -372,7 +387,7 @@ export const getOrdersByUserIdController = async (req, res) => {
 export const getPendingOrdersController = async (req, res) => {
     try {
         const pendingOrders = await getPendingOrders();
-        
+
         return res.status(200).json({
             success: true,
             count: pendingOrders.length,
@@ -391,7 +406,7 @@ export const healthCheckController = async (req, res) => {
     try {
         // Test database connection
         await getOrders();
-        
+
         return res.status(200).json({
             success: true,
             status: "healthy",
@@ -414,7 +429,7 @@ export const healthCheckController = async (req, res) => {
 export const cancelOrderController = async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         if (!id) {
             return res.status(400).json({
                 success: false,
@@ -439,7 +454,7 @@ export const cancelOrderController = async (req, res) => {
         }
 
         const cancelledOrder = await updateOrderStatus(id, "CANCELLED");
-        
+
         return res.status(200).json({
             success: true,
             message: "Order cancelled successfully",

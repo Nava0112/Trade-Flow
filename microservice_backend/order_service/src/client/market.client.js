@@ -2,7 +2,11 @@ import axios from 'axios';
 
 const marketClient = axios.create({
     baseURL: process.env.MARKET_SERVICE_URL || 'http://localhost:2003',
-    timeout: 5000
+    timeout: 5000,
+    headers: {
+        'Content-Type': 'application/json',
+        'x-internal-secret': process.env.INTERNAL_SERVICE_SECRET || ''
+    }
 });
 
 export const addBuyOrderToBook = async (order) => {
