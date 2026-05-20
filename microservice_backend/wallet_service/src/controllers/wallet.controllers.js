@@ -165,30 +165,6 @@ export const updateWalletBalanceController = async (req, res, next) => {
     }
 };
 
-export const updateWalletController = async (req, res, next) => {
-    try {
-        logger.info({
-            requestId: req.requestId,
-            msg: "Forwarding request",
-            target: "Wallet Service",
-            path: req.originalUrl
-        });
-        const { id } = req.params;
-        const { balance } = req.body;
-        const updatedWallet = await updateWalletBalance(id, balance);
-        res.status(200).json({ success: true, data: updatedWallet });
-    } catch (err) {
-        logger.error({
-            requestId: req.requestId,
-            msg: "Error updating wallet balance",
-            target: "Wallet Service",
-            path: req.originalUrl,
-            error: err.message
-        });
-        res.status(500).json({ success: false, error: err.message });
-    }
-};
-
 export const deleteWalletController = async (req, res, next) => {
     try {
         logger.info({

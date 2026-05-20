@@ -17,7 +17,7 @@ export const createBotUser = async (botData) => {
         if (response.data.success) {
             return [response.data.data];
         }
-        throw new Error('User service did not return success');
+        throw new Error(`User service did not return success: ${JSON.stringify(response.data)}`);
     } catch (error) {
         throw new Error(`Failed to create bot user: ${error.message}`);
     }

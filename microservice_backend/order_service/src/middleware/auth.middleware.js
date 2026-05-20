@@ -28,13 +28,6 @@ export const verifyToken = (req, res, next) => {
             });
         }
 
-        if (!process.env.ACCESS_TOKEN_SECRET) {
-            return res.status(500).json({
-                success: false,
-                error: 'Server token configuration missing'
-            });
-        }
-
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         req.user = decoded;
         next();
