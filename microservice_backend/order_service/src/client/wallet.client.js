@@ -2,7 +2,12 @@ import axios from 'axios';
 
 const walletClient = axios.create({
     baseURL: process.env.WALLET_SERVICE_URL || 'http://localhost:2008',
-    timeout: 10000  
+    timeout: 10000,
+    headers: {
+        'x-user-id': 'order-service-system',
+        'x-user-role': 'admin',
+        'x-internal-secret': process.env.INTERNAL_SERVICE_SECRET || ''
+    }
 });
 
 export const lockUserBalance = async (userId, amount) => {

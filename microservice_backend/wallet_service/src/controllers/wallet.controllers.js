@@ -6,9 +6,9 @@ import {
   getWalletByUserId,
   getWallets,
   createWallet,
-  updateWallet,
   deleteWallet,
   updateWalletBalance,
+  getUserWalletBalance,
   lockVerify,
   unlockVerify
 } from '../models/wallet.models.js';
@@ -41,15 +41,17 @@ export const createDepositController = async (req, res) => {
             target: "Wallet Service",
             path: req.originalUrl
         });
+        const { id } = req.params;
         const { user_id, amount } = req.body;
-        if (!user_id || !amount) {
+        const targetUserId = Number(user_id ?? id);
+        if (!targetUserId || !amount) {
             return res.status(400).json({ error: 'user_id and amount are required' });
         }
-        const user = await getUserById(user_id);
-        if (!user) {
+        const userResult = await getUserById(targetUserId);
+        if (!userResult?.success) {
             return res.status(404).json({ error: 'User not found' });
         }
-        const transaction = await createDeposit(user_id, amount);
+        const transaction = await createDeposit(targetUserId, amount);
 
         return res.status(200).json({
             success: true,
@@ -116,6 +118,9 @@ export const getUserWalletBalanceController = async (req, res, next) => {
         });
         const { id } = req.params;
         const balance = await getUserWalletBalance(id);
+        if (balance === null) {
+            return res.status(404).json({ success: false, error: "Wallet not found" });
+        }
         res.status(200).json({ success: true, data: { balance } });
     } catch (err) {
         logger.error({
@@ -139,31 +144,14 @@ export const updateWalletBalanceController = async (req, res, next) => {
         });
         const { id } = req.params;
         const { balance } = req.body;
-        const updatedWallet = await updateWalletBalance(id, balance);
-        res.status(200).json({ success: true, data: updatedWallet });
-    } catch (err) {
-        logger.error({
-            requestId: req.requestId,
-            msg: "Error updating wallet balance",
-            target: "Wallet Service",
-            path: req.originalUrl,
-            error: err.message
-        });
-        res.status(500).json({ success: false, error: err.message });
-    }
-};
-
-export const updateWalletController = async (req, res, next) => {
-    try {
-        logger.info({
-            requestId: req.requestId,
-            msg: "Forwarding request",
-            target: "Wallet Service",
-            path: req.originalUrl
-        });
-        const { id } = req.params;
-        const { balance } = req.body;
-        const updatedWallet = await updateWalletBalance(id, balance);
+        const parsedBalance = Number(balance);
+        if (!Number.isFinite(parsedBalance) || parsedBalance < 0) {
+            return res.status(400).json({ success: false, error: "Balance must be a non-negative number" });
+        }
+        const updatedWallet = await updateWalletBalance(id, parsedBalance);
+        if (!updatedWallet) {
+            return res.status(404).json({ success: false, error: "Wallet not found" });
+        }
         res.status(200).json({ success: true, data: updatedWallet });
     } catch (err) {
         logger.error({
@@ -187,6 +175,9 @@ export const deleteWalletController = async (req, res, next) => {
         });
         const { id } = req.params;
         const deletedWallet = await deleteWallet(id);
+        if (!deletedWallet) {
+            return res.status(404).json({ success: false, error: "Wallet not found" });
+        }
         res.status(200).json({ success: true, data: deletedWallet });
     } catch (err) {
         logger.error({
@@ -210,6 +201,9 @@ export const getWalletByIdController = async (req, res, next) => {
         });
         const { id } = req.params;
         const wallet = await getWalletById(id);
+        if (!wallet) {
+            return res.status(404).json({ success: false, error: "Wallet not found" });
+        }
         res.status(200).json({ success: true, data: wallet });
     } catch (err) {
         logger.error({
@@ -233,6 +227,9 @@ export const getWalletByUserIdController = async (req, res, next) => {
         });
         const { id } = req.params;
         const wallet = await getWalletByUserId(id);
+        if (!wallet) {
+            return res.status(404).json({ success: false, error: "Wallet not found" });
+        }
         res.status(200).json({ success: true, data: wallet });
     } catch (err) {
         logger.error({
@@ -276,9 +273,15 @@ export const createWalletController = async (req, res, next) => {
             target: "Wallet Service",
             path: req.originalUrl
         });
-        const { id } = req.params;
-        const wallet = await createWallet(id);
-        res.status(200).json({ success: true, data: wallet });
+        const userId = Number(req.body.user_id);
+        const initialBalance = Number(req.body.initial_balance ?? req.body.balance ?? 0);
+
+        if (!userId || !Number.isFinite(initialBalance) || initialBalance < 0) {
+            return res.status(400).json({ success: false, error: "Valid user_id and non-negative balance are required" });
+        }
+
+        const wallet = await createWallet(userId, initialBalance);
+        res.status(201).json({ success: true, data: wallet });
     } catch (err) {
         logger.error({
             requestId: req.requestId,

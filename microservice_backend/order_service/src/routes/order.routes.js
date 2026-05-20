@@ -1,6 +1,6 @@
 // routes/order.routes.js
 import express from "express";
-import { verifyToken, isAdmin } from "../middleware/auth.middleware.js";
+import { verifyToken, isAdmin, isOwnerOrAdmin } from "../middleware/auth.middleware.js";
 import { validateCreateOrder } from "../middleware/validation.middleware.js";
 import {
     createOrderController,
@@ -24,14 +24,14 @@ router.get("/health", healthCheckController);
 // Protected routes
 router.get("/", verifyToken, getAllOrdersController);
 router.get("/pending", verifyToken, getPendingOrdersController);
-router.post("/", verifyToken, validateCreateOrder, createOrderController);
+router.post("/", verifyToken, validateCreateOrder, isOwnerOrAdmin, createOrderController);
 router.get("/user/:userId", verifyToken, getOrdersByUserIdController);
 
 // Order-specific routes
 router.get("/:id", verifyToken, getOrderByIdController);
-router.put("/:id", verifyToken, updateOrderController);
-router.delete("/:id", verifyToken, deleteOrderController);
-router.put("/:id/cancel", verifyToken, cancelOrderController);
+router.put("/:id", verifyToken, isOwnerOrAdmin, updateOrderController);
+router.delete("/:id", verifyToken, isOwnerOrAdmin, deleteOrderController);
+router.put("/:id/cancel", verifyToken, isOwnerOrAdmin, cancelOrderController);
 router.put("/:id/status", verifyToken, isAdmin, updateOrderStatusController);
 
 // Symbol-based routes

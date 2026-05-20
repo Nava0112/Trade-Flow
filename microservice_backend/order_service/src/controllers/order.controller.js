@@ -183,7 +183,7 @@ export const updateOrderStatusController = async (req, res) => {
             });
         }
 
-        const validStatuses = ["PENDING", "PARTIAL", "FILLED", "CANCELLED", "REJECTED"];
+        const validStatuses = ["PENDING", "PARTIAL", "FILLED", "CANCELLED", "FAILED"];
         if (!validStatuses.includes(status.toUpperCase())) {
             return res.status(400).json({
                 success: false,

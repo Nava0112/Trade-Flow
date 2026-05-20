@@ -4,10 +4,22 @@ import {
     getUserByEmail,
     getUserById,
     deleteUser,
-    updateUserPassword
+    updateUserPassword,
+    updateUser
 } from '../models/user.models.js';
 import logger from "../../../shared/logger/index.js";
 import { createWallet } from '../client/wallet.client.js';
+
+const sanitizeUser = (user) => {
+    if (!user) return user;
+    const { password, ...safeUser } = user;
+    return safeUser;
+};
+
+const isTrustedInternalRequest = (req) =>
+    req.headers['x-internal-secret'] &&
+    process.env.INTERNAL_SERVICE_SECRET &&
+    req.headers['x-internal-secret'] === process.env.INTERNAL_SERVICE_SECRET;
 
 export const createUserController = async (req, res) => {
     const { name, email, password } = req.body;
@@ -30,7 +42,7 @@ export const createUserController = async (req, res) => {
         }
         res.status(201).json({
             success: true,
-            data: addedUser,
+            data: sanitizeUser(addedUser),
             wallet: wallet.data
         });
     }
@@ -61,7 +73,7 @@ export const getUserByIdController = async (req, res) => {
         if (user) {
             res.status(200).json({
                 success: true,
-                data: user.data
+                data: sanitizeUser(user)
             });
         } else {
             res.status(404).json({
@@ -95,7 +107,7 @@ export const getAllUsersController = async (req, res) => {
         const users = await getUsers();
         res.status(200).json({
             success: true,
-            data: users
+            data: users.map(sanitizeUser)
         });
     }
     catch (error) {
@@ -125,7 +137,7 @@ export const getUserByEmailController = async (req, res) => {
         if (user) {
             res.status(200).json({
                 success: true,
-                data: user
+                data: isTrustedInternalRequest(req) ? user : sanitizeUser(user)
             });
         } else {
             res.status(404).json({
@@ -198,7 +210,7 @@ export const updateUserPasswordController = async (req, res) => {
         if (updatedUser) {
             res.status(200).json({
                 success: true,
-                data: updatedUser
+                data: sanitizeUser(updatedUser)
             });
         } else {
             res.status(404).json({
@@ -235,7 +247,7 @@ export const updateUserController = async (req, res) => {
         if (updatedUser) {
             res.status(200).json({
                 success: true,
-                data: updatedUser
+                data: sanitizeUser(updatedUser)
             });
         } else {
             res.status(404).json({

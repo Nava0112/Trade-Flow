@@ -2,10 +2,17 @@ import jwt from 'jsonwebtoken';
 
 export const verifyToken = async (req, res, next) => {
     try {
+        const internalSecret = req.headers['x-internal-secret'];
         const userId = req.headers['x-user-id'];
         const userRole = req.headers['x-user-role'];
 
-        if (userId && userRole) {
+        if (
+            internalSecret &&
+            process.env.INTERNAL_SERVICE_SECRET &&
+            internalSecret === process.env.INTERNAL_SERVICE_SECRET &&
+            userId &&
+            userRole
+        ) {
             req.user = { id: userId, role: userRole };
             return next();
         }

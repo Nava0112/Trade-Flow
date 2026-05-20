@@ -5,7 +5,8 @@ const walletClient = axios.create({
     timeout: 5000,
     headers: {
         'x-user-id': 'market-service-system',
-        'x-user-role': 'admin'
+        'x-user-role': 'admin',
+        'x-internal-secret': process.env.INTERNAL_SERVICE_SECRET || ''
     }
 });
 
@@ -41,7 +42,7 @@ export const updateUserBalance = async (user_id, amount) => {
             // Let's assume for Bot Topup we can set absolute.
             const current = await getUserWalletBalance(user_id);
             const newBal = Number(current) + Number(amount);
-            await walletClient.put(`/wallet/${user_id}`, { balance: newBal });
+            await walletClient.put(`/wallet/${user_id}/balance`, { balance: newBal });
         }
     } catch (error) {
         throw new Error(`Failed to update wallet balance: ${error.message}`);
@@ -74,7 +75,7 @@ export const unlockBalance = async (user_id, amount) => {
 
 export const updateWallet = async (user_id, balance) => {
     try {
-        const response = await walletClient.put(`/wallet/${user_id}`, { balance });
+        const response = await walletClient.put(`/wallet/${user_id}/balance`, { balance });
         return response.data;
     } catch (error) {
         throw new Error(`Failed to update wallet: ${error.message}`);

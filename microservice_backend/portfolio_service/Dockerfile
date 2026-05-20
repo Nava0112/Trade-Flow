@@ -1,7 +1,15 @@
 FROM node:18-alpine
+
 WORKDIR /app
-COPY package*.json ./
+
+COPY shared ./shared
+WORKDIR /app/shared
 RUN npm ci
-COPY . .
-EXPOSE 3000
+
+WORKDIR /app
+COPY portfolio_service ./portfolio_service
+WORKDIR /app/portfolio_service
+RUN npm ci
+
+EXPOSE 2005
 CMD ["npm", "start"]

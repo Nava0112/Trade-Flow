@@ -56,7 +56,7 @@ const services = {
         routes: {
             getAllStocks: "/",
             getStockBySymbol: "/symbol/:symbol",
-            getStockByPriceRange: "/price/:min/:max",
+            getStocksByPriceRange: "/price/:min/:max",
             createStock: "/",
             updateStock: "/:symbol",
             deleteStock: "/:symbol",
@@ -85,7 +85,7 @@ const services = {
             getWallets: "/wallets",
             getUserWalletBalance: "/balance/:id",
             createWallet: "/wallet",
-            updateWallet: "/wallet/:id",
+            updateWallet: "/wallet/:id/balance",
             deleteWallet: "/wallet/:id",
             createDeposit: "/deposit/:id",
             confirmDeposit: "/deposit/confirm/:transactionId",
@@ -94,13 +94,13 @@ const services = {
         }
     },
     transaction: {
-        host: env === 'development' ? "http://localhost:2008" : process.env.TRANSACTION_SERVICE,
+        host: env === 'development' ? "http://localhost:2008" : (process.env.TRANSACTION_SERVICE || process.env.WALLET_SERVICE),
         mountPoint: "/transaction",
         routes: {
             getTransactions: "/",
             getUserTransactions: "/user/:userId",
-            getTransactionById: "/:Transactionid",
-            deleteTransaction: "/:Transactionid"
+            getTransactionById: "/:transactionId",
+            deleteTransaction: "/:transactionId"
         }
     }
 }

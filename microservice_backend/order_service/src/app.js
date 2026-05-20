@@ -5,6 +5,10 @@ import router from "./routes/order.routes.js";
 import { errorHandler, requestContext, requestLogger } from "@trade-flow/shared";
 
 dotenv.config();
+if (!process.env.ACCESS_TOKEN_SECRET) {
+    console.error("CRITICAL: ACCESS_TOKEN_SECRET is not defined in environment variables.");
+    process.exit(1);
+}
 const app = express();
 const PORT = process.env.PORT || 2004;
 

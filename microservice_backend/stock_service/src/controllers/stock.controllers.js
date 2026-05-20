@@ -190,8 +190,8 @@ export const updateStockController = async (req, res) => {
 };
 
 export const getStocksByPriceRangeController = async (req, res) => {
-  const min = parseFloat(req.query.min);
-  const max = parseFloat(req.query.max);
+  const min = parseFloat(req.params.min);
+  const max = parseFloat(req.params.max);
 
   if (isNaN(min) || isNaN(max) || min < 0 || max < 0 || min > max) {
     return res.status(400).json({ error: "Invalid price range" });

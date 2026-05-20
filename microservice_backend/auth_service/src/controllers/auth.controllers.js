@@ -5,6 +5,14 @@ import logger from "../../../shared/logger/index.js";
 
 const isProduction = process.env.NODE_ENV === "production";
 
+const sanitizeUser = (user) => ({
+  id: user.id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  created_at: user.created_at,
+  updated_at: user.updated_at
+});
 
 export const signupController = async (req, res) => {
   const { email, password, name, balance } = req.body;
@@ -68,7 +76,7 @@ export const signupController = async (req, res) => {
     return res.status(201).json({
       success: true,
       data: {
-        user: newUser
+        user: sanitizeUser(newUser)
       }
     });
   } catch (error) {
@@ -137,7 +145,7 @@ export const loginController = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: { user }
+      data: { user: sanitizeUser(user) }
     });
   } catch (error) {
     logger.error({

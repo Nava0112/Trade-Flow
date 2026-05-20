@@ -2,7 +2,12 @@ import axios from 'axios';
 
 const portfolioClient = axios.create({
     baseURL: process.env.PORTFOLIO_SERVICE_URL || 'http://localhost:2005',
-    timeout: 5000
+    timeout: 5000,
+    headers: {
+        'x-user-id': 'order-service-system',
+        'x-user-role': 'admin',
+        'x-internal-secret': process.env.INTERNAL_SERVICE_SECRET || ''
+    }
 });
 
 export const lockStockQuantity = async (userId, symbol, quantity) => {

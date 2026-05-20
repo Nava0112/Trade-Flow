@@ -2,19 +2,14 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy shared module
 COPY shared ./shared
-# Install shared dependencies
 WORKDIR /app/shared
-RUN npm install
+RUN npm ci
 
-# Copy service
 WORKDIR /app
 COPY auth_service ./auth_service
-
-# Install service dependencies
 WORKDIR /app/auth_service
-RUN npm install
+RUN npm ci
 
 EXPOSE 2002
 CMD ["npm", "start"]

@@ -1,20 +1,23 @@
-import { getUserByTransactionId } from "../client/user.client.js";
+import { getTransactionById } from "../models/transaction.models.js";
 
 export const isTransactionOwnerOrAdmin = async (req, res, next) => {
-  const transactionId = req.params.id;
-  const owner = await getUserByTransactionId(transactionId);
+  try {
+    const transactionId = req.params.transactionId;
+    const transaction = await getTransactionById(transactionId);
 
-  const ownerId = owner.user_id;
-  if (!ownerId) {
-    return res.status(404).json({ error: "Transaction not found" });
+    if (!transaction) {
+      return res.status(404).json({ error: "Transaction not found" });
+    }
+
+    if (
+      String(transaction.user_id) !== String(req.user.id) &&
+      req.user.role !== "admin"
+    ) {
+      return res.status(403).json({ error: "Forbidden: not transaction owner" });
+    }
+
+    next();
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
-
-  if (
-    String(ownerId) !== String(req.user.id) &&
-    req.user.role !== "admin"
-  ) {
-    return res.status(403).json({ error: "Forbidden : You are not admin or owner of this transaction" });
-  }
-
-  next();
 };

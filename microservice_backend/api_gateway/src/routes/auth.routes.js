@@ -8,7 +8,6 @@ router.post("/login", forwardRequest("auth", "login"));
 router.post("/logout", verifyToken, forwardRequest("auth", "logout"));
 router.post("/refresh-token", forwardRequest("auth", "refreshToken"));
 
-router.get("/", verifyToken, forwardRequest("auth", ""));
-router.get("/signup", verifyToken, forwardRequest("auth", "signup"));
-router.get("/login", verifyToken, forwardRequest("auth", "login"));
-router.get("/logout", verifyToken, forwardRequest("auth", "logout"));
+router.get("/", (req, res) => {
+  res.status(200).json({ message: "Auth gateway endpoint" });
+});

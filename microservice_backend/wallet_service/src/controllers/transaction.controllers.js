@@ -1,5 +1,6 @@
 import {
   getAllTransactions,
+  getTransactionById,
   getTransactionsByUserId,
   deleteTransaction
 } from '../models/transaction.models.js';
@@ -34,7 +35,7 @@ export const getTransactionByIdController = async (req, res) => {
         target: "Wallet Service",
         path: req.originalUrl
     });
-    const transaction = await getTransactionById(req.params.id);
+    const transaction = await getTransactionById(req.params.transactionId);
     if (!transaction) {
       return res.status(404).json({ error: 'Transaction not found' });
     }
@@ -58,7 +59,7 @@ export const deleteTransactionController = async (req, res) => {
         target: "Wallet Service",
         path: req.originalUrl
     });
-    const deletedCount = await deleteTransaction(req.params.id);
+    const deletedCount = await deleteTransaction(req.params.transactionId);
     if (!deletedCount) {
       return res.status(404).json({ error: 'Transaction not found' });
     }
