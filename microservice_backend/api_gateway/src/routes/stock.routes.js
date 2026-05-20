@@ -6,7 +6,7 @@ export const router = express.Router();
 
 router.post('/',verifyToken,  isAdmin, forwardRequest("stock", "createStock"));
 router.get('/', verifyToken, forwardRequest("stock", "getAllStocks"));
-router.get('/price/:min/:max', verifyToken, forwardRequest("stock", "getStockByPriceRange"));
+router.get('/price/:min/:max', verifyToken, forwardRequest("stock", "getStocksByPriceRange"));
 router.get('/symbol/:symbol', verifyToken, forwardRequest("stock", "getStockBySymbol"));
 router.put('/symbol/:symbol/price', verifyToken, isAdmin, forwardRequest("stock", "updateStockPrice"));
 router.put('/symbol/:symbol', verifyToken, isAdmin, forwardRequest("stock", "updateStock"));

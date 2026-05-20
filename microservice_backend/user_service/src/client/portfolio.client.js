@@ -13,7 +13,11 @@ const portfolioClient = axios.create({
 export const getPortfoliosByUserId = async (userId) => {
     try {
         const response = await portfolioClient.get(`/portfolio/user/${userId}`);
-        return Array.isArray(response.data) ? response.data : [];
+        return Array.isArray(response.data?.data)
+            ? response.data.data
+            : Array.isArray(response.data)
+                ? response.data
+                : [];
     } catch (error) {
         throw new Error(`Failed to get portfolios: ${error.message}`);
     }

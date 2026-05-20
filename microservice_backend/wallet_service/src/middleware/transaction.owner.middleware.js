@@ -2,7 +2,7 @@ import { getTransactionById } from "../models/transaction.models.js";
 
 export const isTransactionOwnerOrAdmin = async (req, res, next) => {
   try {
-    const transactionId = req.params.transactionId || req.params.Transactionid;
+    const transactionId = req.params.transactionId;
     const transaction = await getTransactionById(transactionId);
 
     if (!transaction) {

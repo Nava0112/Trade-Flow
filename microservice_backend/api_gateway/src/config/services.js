@@ -56,7 +56,7 @@ const services = {
         routes: {
             getAllStocks: "/",
             getStockBySymbol: "/symbol/:symbol",
-            getStockByPriceRange: "/price/:min/:max",
+            getStocksByPriceRange: "/price/:min/:max",
             createStock: "/",
             updateStock: "/:symbol",
             deleteStock: "/:symbol",
