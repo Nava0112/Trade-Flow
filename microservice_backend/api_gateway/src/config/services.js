@@ -85,7 +85,7 @@ const services = {
             getWallets: "/wallets",
             getUserWalletBalance: "/balance/:id",
             createWallet: "/wallet",
-            updateWallet: "/wallet/:id",
+            updateWallet: "/wallet/:id/balance",
             deleteWallet: "/wallet/:id",
             createDeposit: "/deposit/:id",
             confirmDeposit: "/deposit/confirm/:transactionId",

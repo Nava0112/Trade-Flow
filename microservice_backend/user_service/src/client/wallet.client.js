@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const walletClient = axios.create({
-    baseURL: process.env.WALLET_SERVICE || "http://localhost:2008",
+    baseURL: process.env.WALLET_SERVICE ? `${process.env.WALLET_SERVICE}/wallet` : "http://localhost:2008/wallet",
     headers: {
         "Content-Type": "application/json",
         "x-internal-secret": process.env.INTERNAL_SERVICE_SECRET || "",
@@ -16,7 +16,7 @@ const walletClient = axios.create({
 
 export const createWallet = async (userId, initialBalance) => {
     try {
-        const response = await walletClient.post("/wallet/wallet", {
+        const response = await walletClient.post("/wallet", {
             user_id: userId,
             initial_balance: initialBalance
         });
