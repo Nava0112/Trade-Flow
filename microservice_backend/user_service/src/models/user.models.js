@@ -1,6 +1,6 @@
 import db from '../db/knex.js';
 import bcrypt from 'bcrypt';
-import { deletePortfolio } from '../client/portfolio.client.js';
+import { deletePortfolio, getPortfoliosByUserId } from '../client/portfolio.client.js';
 
 export const getUsers = async () => {
     return await db('users').select('*');
@@ -40,14 +40,10 @@ export const createUser = async (user) => {
     return createdUser;
 }
 
-export const getUserPortfolio = async (user_id) => {
-    return await db('portfolios').where({ user_id });
-}
-
 export const deleteUser = async (id) => {
-    const existingPortfolios = await getUserPortfolio(id);
-    if (existingPortfolios.length > 0) {
-        await deletePortfolio(id); 
+    const existingPortfolios = await getPortfoliosByUserId(id);
+    for (const portfolio of existingPortfolios) {
+        await deletePortfolio(id, portfolio.symbol);
     }
     return await db('users').where({ id }).del();
 }
@@ -65,6 +61,10 @@ export const hashPassword = async (password) => {
 }
 
 export const updateUser = async (id, user) => {
-    const [updatedUser] = await db('users').where({ id }).update(user).returning('*');
+    const updates = { ...user };
+    if (updates.password) {
+        updates.password = await hashPassword(updates.password);
+    }
+    const [updatedUser] = await db('users').where({ id }).update(updates).returning('*');
     return updatedUser;
 }

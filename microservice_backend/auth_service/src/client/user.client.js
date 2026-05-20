@@ -5,6 +5,9 @@ const userClient = axios.create({
     baseURL: process.env.USER_SERVICE || "http://localhost:2007",
     headers: {
         "Content-Type": "application/json",
+        "x-internal-secret": process.env.INTERNAL_SERVICE_SECRET || "",
+        "x-user-id": "auth-service-system",
+        "x-user-role": "admin"
     },
     timeout: 5000,
 });

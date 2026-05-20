@@ -34,7 +34,8 @@ export const forwardRequest = (serviceName, routeKey) => {
           authorization: req.headers.authorization,
           cookie: req.headers.cookie,
           "x-user-id": req.user?.id,
-          "x-user-role": req.user?.role
+          "x-user-role": req.user?.role,
+          "x-internal-secret": process.env.INTERNAL_SERVICE_SECRET
         },
         timeout: 5000
       });

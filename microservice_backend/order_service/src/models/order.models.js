@@ -157,10 +157,8 @@ export const updateOrder = async (id, orderData) => {
 export const getActiveOrdersBySymbol = async (symbol) => {
     try {
         return await db('orders')
-            .where({ 
-                symbol,
-                status: ['PENDING', 'PARTIAL']
-            })
+            .where({ symbol })
+            .whereIn('status', ['PENDING', 'PARTIAL'])
             .orderBy('created_at', 'asc');
     } catch (error) {
         console.error("Get active orders by symbol model error:", error.message);

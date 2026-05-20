@@ -5,7 +5,8 @@ const walletClient = axios.create({
     timeout: 5000,
     headers: {
         'x-user-id': 'market-service-system',
-        'x-user-role': 'admin'
+        'x-user-role': 'admin',
+        'x-internal-secret': process.env.INTERNAL_SERVICE_SECRET || ''
     }
 });
 

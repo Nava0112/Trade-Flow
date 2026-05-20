@@ -94,13 +94,13 @@ const services = {
         }
     },
     transaction: {
-        host: env === 'development' ? "http://localhost:2008" : process.env.TRANSACTION_SERVICE,
+        host: env === 'development' ? "http://localhost:2008" : (process.env.TRANSACTION_SERVICE || process.env.WALLET_SERVICE),
         mountPoint: "/transaction",
         routes: {
             getTransactions: "/",
             getUserTransactions: "/user/:userId",
-            getTransactionById: "/:Transactionid",
-            deleteTransaction: "/:Transactionid"
+            getTransactionById: "/:transactionId",
+            deleteTransaction: "/:transactionId"
         }
     }
 }

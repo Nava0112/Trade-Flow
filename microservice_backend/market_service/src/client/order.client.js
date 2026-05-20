@@ -1,21 +1,6 @@
 // client/order.client.js
 import axios from 'axios';
-import jwt from 'jsonwebtoken';
 import { circuitBreakers } from '../utils/circuit.breaker.js';
-
-// Generate service token for inter-service communication
-const generateServiceToken = () => {
-    const payload = {
-        id: 0, // System user ID
-        email: 'market-service@system.local',
-        role: 'admin',
-        service: 'market-service'
-    };
-    
-    return jwt.sign(payload, process.env.JWT_SECRET || 'your-secret-key', { 
-        expiresIn: '24h' 
-    });
-};
 
 const orderClient = axios.create({
     baseURL: process.env.ORDER_SERVICE_URL ? `${process.env.ORDER_SERVICE_URL}/orders` : 'http://localhost:2004/orders',
@@ -23,14 +8,14 @@ const orderClient = axios.create({
     headers: {
         'x-user-id': 'market-service-system',
         'x-user-role': 'admin',
+        'x-internal-secret': process.env.INTERNAL_SERVICE_SECRET || '',
         'Content-Type': 'application/json'
     }
 });
 
 orderClient.interceptors.request.use(
     config => {
-        // Generate a fresh JWT for every request (Bug 1 fix)
-        config.headers.Authorization = `Bearer ${generateServiceToken()}`;
+        config.headers['x-internal-secret'] = process.env.INTERNAL_SERVICE_SECRET || '';
         console.log(`[Order Client] ${config.method.toUpperCase()} ${config.url}`);
         return config;
     },

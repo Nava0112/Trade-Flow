@@ -10,12 +10,12 @@ export const createWallet = async (user_id, balance) => {
 }
 
 export const updateWalletBalance = async (user_id, balance) => {
-    const [updatedWallet] = await db('wallets').where({ user_id }).update({ balance }).returning('*');
+    const [updatedWallet] = await db('wallets').where({ user_id }).update({ balance, updated_at: db.fn.now() }).returning('*');
     return updatedWallet;
 }
 
 export const updateWallet = async (user_id, balance) => {
-    const [updatedWallet] = await db('wallets').where({ user_id }).update({ balance }).returning('*');
+    const [updatedWallet] = await db('wallets').where({ user_id }).update({ balance, updated_at: db.fn.now() }).returning('*');
     return updatedWallet;
 }
 
@@ -28,11 +28,12 @@ export const getWallets = async () => {
 }
 
 export const getUserWalletBalance = async (user_id) => {
-    return await db('wallets').where({ user_id }).select('balance');
+    const wallet = await db('wallets').where({ user_id }).select('balance').first();
+    return wallet ? Number(wallet.balance) : null;
 }
 
 export const getWalletById = async (id) => {
-    return await db('wallets').where({ id });
+    return await db('wallets').where({ id }).first();
 }
 
 export const lockVerify = async (user_id, amount) => {
@@ -43,6 +44,9 @@ export const lockVerify = async (user_id, amount) => {
         const balance = Number(wallet.balance);
         const locked = Number(wallet.locked_balance || 0);
         const reqAmount = Number(amount);
+        if (!Number.isFinite(reqAmount) || reqAmount <= 0) {
+            throw new Error('Amount must be a positive number');
+        }
 
         if (balance - locked < reqAmount) {
             throw new Error('Insufficient funds');
@@ -60,10 +64,26 @@ export const lockVerify = async (user_id, amount) => {
 }
 
 export const unlockVerify = async (user_id, amount) => {
-    return await db('wallets')
-        .where({ user_id })
-        .update({
-            locked_balance: db.raw('GREATEST(0, locked_balance - ?)', [amount])
-        })
-        .returning('*');
+    return await db.transaction(async (trx) => {
+        const reqAmount = Number(amount);
+        if (!Number.isFinite(reqAmount) || reqAmount <= 0) {
+            throw new Error('Amount must be a positive number');
+        }
+
+        const wallet = await trx('wallets').where({ user_id }).forUpdate().first();
+        if (!wallet) throw new Error('Wallet not found');
+        if (Number(wallet.locked_balance || 0) < reqAmount) {
+            throw new Error('Insufficient locked balance');
+        }
+
+        const [updated] = await trx('wallets')
+            .where({ user_id })
+            .update({
+                locked_balance: trx.raw('locked_balance - ?', [reqAmount]),
+                updated_at: trx.fn.now()
+            })
+            .returning('*');
+
+        return updated;
+    });
 }

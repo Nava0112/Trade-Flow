@@ -2,17 +2,20 @@
 import axios from 'axios';
 
 const stockClient = axios.create({
-    baseURL: process.env.STOCK_SERVICE_URL || 'http://localhost:3001',
+    baseURL: process.env.STOCK_SERVICE_URL || 'http://localhost:2006',
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
-        'x-service-name': 'order-service'
+        'x-service-name': 'order-service',
+        'x-user-id': 'order-service-system',
+        'x-user-role': 'admin',
+        'x-internal-secret': process.env.INTERNAL_SERVICE_SECRET || ''
     }
 });
 
 export const getStockBySymbol = async (symbol) => {
     try {
-        const response = await stockClient.get(`/stocks/${symbol}`);
+        const response = await stockClient.get(`/stocks/symbol/${symbol}`);
         return response.data.data || response.data;
     } catch (error) {
         if (error.response?.status === 404) {

@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const userClient = axios.create({
-    baseURL: process.env.USER_SERVICE_URL || 'http://localhost:3005',
+    baseURL: process.env.USER_SERVICE_URL || 'http://localhost:2007',
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
